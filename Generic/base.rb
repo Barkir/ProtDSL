@@ -7,10 +7,24 @@ module SimInfra
         return @@instructions if Object.const_defined?(:IRB)
         require 'yaml'
         yaml_data = YAML.dump(@@instructions.map(&:to_h))
-
         File.open("IR.yaml", "w") do |file|
             file.write(yaml_data)
         end
+    end
+
+    def self.create_encoder(msg=nil)
+        encoder = File.open("encoder.rb", "w")
+        @@instructions.each do |instr|
+            print instr
+            encoder.write("def translate" + instr.name.to_s + "(operands)\n")
+            encoder.write("\tcommand = 0\n")
+            instr.fields.each_with_index do |elem, index|
+                encoder.write("\t#{elem.name}=operands[#{index}]\n")
+                encoder.write("\tcommand = set_bits(command, #{elem.name}, #{elem.from}, #{elem.to})\n")
+            end
+            encoder.write("end\n\n")
+        end
+        encoder.close()
     end
 
     # reset state

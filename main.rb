@@ -4,3 +4,4 @@ require_relative "Generic/builder"
 require_relative "Target/RISC-V/32I.rb"
 
 SimInfra.serialize
+SimInfra.create_encoder

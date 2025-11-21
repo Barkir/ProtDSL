@@ -4,7 +4,7 @@ require_relative "var"
 module SimInfra
     class Scope
 
-        include GlobalCounter# used for temp variables IDs
+        include GlobalCounter # used for temp variables IDs
         attr_reader :tree, :vars, :parent
         def initialize(parent); @tree = []; @vars = {}; end
         # resolve allows to convert Ruby Integer constants to Constant instance
@@ -35,7 +35,7 @@ module SimInfra
         def sub(a,b); binOp(a,b, :sub); end
 
         private def tmpvar(type); var("_tmp#{next_counter}".to_sym, type); end
-        # stmtadds statement into tree and retursoperand[0]
+        # stmtadds statement into tree and returns operand[0]
         # which result in near all cases
         def stmt(name, operands, attrs= nil);
             @tree << IrStmt.new(name, operands, attrs); operands[0]
