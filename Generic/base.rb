@@ -1,4 +1,5 @@
 # Testing infra
+require_relative "constants"
 
 module SimInfra
     # @@instructions -array of instruction description
@@ -12,18 +13,31 @@ module SimInfra
         end
     end
 
+    def self.write_encoder_header(encoder)
+        encoder.write(CLASS_MICROASM)
+        encoder.write(INITIALIZE_CODE)
+        encoder.write(PROG_CODE)
+        encoder.write(SET_BITS_CODE)
+        encoder.write(SAVE_BINARY_CODE)
+        encoder.write(RUN_BINARY_CODE)
+    end
+
     def self.create_encoder(msg=nil)
         encoder = File.open("encoder.rb", "w")
+        write_encoder_header(encoder)
+
+
         @@instructions.each do |instr|
             print instr
-            encoder.write("def translate" + instr.name.to_s + "(operands)\n")
+            encoder.write("def translate" + instr.name.to_s + "(#{OPERANDS_ARRAY})\n")
             encoder.write("\tcommand = 0\n")
             instr.fields.each_with_index do |elem, index|
-                encoder.write("\t#{elem.name}=operands[#{index}]\n")
+                encoder.write("\t#{elem.name}=#{OPERANDS_ARRAY}[#{index}]\n")
                 encoder.write("\tcommand = set_bits(command, #{elem.name}, #{elem.from}, #{elem.to})\n")
             end
-            encoder.write("end\n\n")
+            encoder.write(END_TERM)
         end
+        encoder.write(END_TERM)
         encoder.close()
     end
 
