@@ -21,12 +21,13 @@ module SimInfra
         encoder.write(SAVE_BINARY_CODE)
         encoder.write(RUN_BINARY_CODE)
         encoder.write(WRITE_COMMAND_CODE)
+        encoder.write(LABEL_CODE)
         encoder.write(SKIP_IF_COLLECT_CODE)
 
     end
 
     def self.create_translate_func(encoder, instr)
-        encoder.write("def translate #{instr.name.to_s}(#{OPERANDS_ARRAY})\n")
+        encoder.write("def translate#{instr.name.to_s}(#{OPERANDS_ARRAY})\n")
         encoder.write("\tcommand = 0\n")
         instr.fields.each_with_index do |elem, index|
             encoder.write("\t#{elem.name}=#{OPERANDS_ARRAY}[#{index}]\n")
@@ -38,11 +39,9 @@ module SimInfra
     def self.create_func(encoder, instr)
         operands = instr.fields.select{|f| f.value == :reg}.map(&:name).join(", ")
         opcodes  = instr.fields.select{|f| f.value != :reg}.map(&:value).join(", ")
-        print opcodes
-        # print instr
         encoder.write("def #{instr.name}(#{operands})\n")
-        encoder.write("skip_if_collect do\n")
-        encoder.write("write_command()")
+        encoder.write("\tskip_if_collect do\n")
+        encoder.write("\twrite_command(translate#{instr.name}([#{operands}, #{opcodes}]))\n")
         encoder.write(END_TERM)
         encoder.write(END_TERM)
     end

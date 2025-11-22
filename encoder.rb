@@ -26,7 +26,7 @@ def prog(&block)
         instance_eval(&block)
 
         save_binary
-        run_binary
+        #run_binary
     end
 def set_bits(number, value, from, to)
     width = to - from + 1
@@ -57,6 +57,12 @@ def write_command(value)
     @pc += 4
     @command_pc += 1
 end
+def label(label_str)
+    raise  "Expected symbol, got #{label_str.class}" unless label_str.is_a?(Symbol)
+    if @collecting_labels
+        @labels[label_str] = @pc
+    end
+end
 def skip_if_collect(&block)
   if @collecting_labels
     @pc += 4
@@ -65,10 +71,11 @@ def skip_if_collect(&block)
   end
 end
 def ADD(rd, rs1, rs2)
-skip_if_collect do
-write_command()end
+	skip_if_collect do
+	write_command(translateADD([rd, rs1, rs2, 51, 0, 0]))
 end
-def translate ADD(operands)
+end
+def translateADD(operands)
 	command = 0
 	rd=operands[0]
 	command = set_bits(command, rd, 11, 7)
@@ -84,10 +91,11 @@ def translate ADD(operands)
 	command = set_bits(command, funct3, 14, 12)
 end
 def SUB(rd, rs1, rs2)
-skip_if_collect do
-write_command()end
+	skip_if_collect do
+	write_command(translateSUB([rd, rs1, rs2, 51, 32, 0]))
 end
-def translate SUB(operands)
+end
+def translateSUB(operands)
 	command = 0
 	rd=operands[0]
 	command = set_bits(command, rd, 11, 7)

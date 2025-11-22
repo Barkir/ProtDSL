@@ -37,7 +37,7 @@ def prog(&block)
         instance_eval(&block)
 
         save_binary
-        run_binary
+        \#run_binary
     end
 CODE
 
@@ -85,6 +85,15 @@ def skip_if_collect(&block)
     yield
   end
 end
+CODE
+
+LABEL_CODE = <<~CODE
+    def label(label_str)
+        raise  "Expected symbol, got \#{label_str.class}" unless label_str.is_a?(Symbol)
+        if @collecting_labels
+            @labels[label_str] = @pc
+        end
+    end
 CODE
 
 END_TERM="end\n"
