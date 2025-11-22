@@ -11,7 +11,7 @@ module RV32I
     }
 
     Instruction(:SUB, XReg(:rd), XReg(:rs1), XReg(:rs2)) {
-        encoding *format_r_alu(:add, rd, rs1, rs2)
+        encoding *format_r_alu(:sub, rd, rs1, rs2)
         asm { "SUB #{rd}, #{rs1}, #{rs2}" }
         code { rd[]= rs1 - rs2 }
     }
