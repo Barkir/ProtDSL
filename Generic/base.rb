@@ -14,6 +14,10 @@ module SimInfra
     end
 
     def self.write_encoder_header(encoder)
+
+        encoder.write("\# <><><><><><><><><><><><><><><><><><><><><><><>\n")
+        encoder.write("\# Encoder Standard library functions block\n")
+        encoder.write("\# <><><><><><><><><><><><><><><><><><><><><><><>\n\n")
         encoder.write(CLASS_MICROASM)
         encoder.write(INITIALIZE_CODE)
         encoder.write(PROG_CODE)
@@ -23,7 +27,7 @@ module SimInfra
         encoder.write(WRITE_COMMAND_CODE)
         encoder.write(LABEL_CODE)
         encoder.write(SKIP_IF_COLLECT_CODE)
-
+        encoder.write("\# <><><><><><><><><><><><><><><><><><><><><><><>\n\n")
     end
 
     def self.create_translate_func(encoder, instr)
@@ -33,17 +37,20 @@ module SimInfra
             encoder.write("\t#{elem.name}=#{OPERANDS_ARRAY}[#{index}]\n")
             encoder.write("\tcommand = set_bits(command, #{elem.name}, #{elem.from}, #{elem.to})\n")
         end
+        encoder.write("\treturn command\n")
         encoder.write(END_TERM)
+        encoder.write("\n\n")
     end
 
     def self.create_func(encoder, instr)
         operands = instr.fields.select{|f| f.value == :reg}.map(&:name).join(", ")
         opcodes  = instr.fields.select{|f| f.value != :reg}.map(&:value).join(", ")
         encoder.write("def #{instr.name}(#{operands})\n")
-        encoder.write("\tskip_if_collect do\n")
-        encoder.write("\twrite_command(translate#{instr.name}([#{operands}, #{opcodes}]))\n")
+            encoder.write("\tskip_if_collect do\n")
+            encoder.write("\twrite_command(translate#{instr.name}([#{operands}, #{opcodes}]))\n")
+            encoder.write("\t" + END_TERM)
         encoder.write(END_TERM)
-        encoder.write(END_TERM)
+        encoder.write("\n\n")
     end
 
     def self.create_encoder(msg=nil)
@@ -51,9 +58,13 @@ module SimInfra
         write_encoder_header(encoder)
 
         @@instructions.each do |instr|
-            # print instr
+
+            encoder.write("\# ============================================\n")
+            encoder.write("\# #{instr.name} functions block\n")
+            encoder.write("\# ============================================\n")
             create_func(encoder, instr)
             create_translate_func(encoder, instr)
+            encoder.write("\# ============================================\n\n")
         end
         encoder.write(END_TERM)
         encoder.close()

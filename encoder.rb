@@ -1,3 +1,7 @@
+# <><><><><><><><><><><><><><><><><><><><><><><>
+# Encoder Standard library functions block
+# <><><><><><><><><><><><><><><><><><><><><><><>
+
 class MicroAsm
 def initialize
     @labels = {}
@@ -28,7 +32,7 @@ def prog(&block)
         save_binary
         #run_binary
     end
-def set_bits(number, value, from, to)
+def set_bits(number, value, to, from)
     width = to - from + 1
     mask = ((1 << width) - 1) << from
     (number & ~mask) | ((value & ((1 << width) - 1)) << from)
@@ -70,11 +74,18 @@ def skip_if_collect(&block)
     yield
   end
 end
+# <><><><><><><><><><><><><><><><><><><><><><><>
+
+# ============================================
+# ADD functions block
+# ============================================
 def ADD(rd, rs1, rs2)
 	skip_if_collect do
 	write_command(translateADD([rd, rs1, rs2, 51, 0, 0]))
+	end
 end
-end
+
+
 def translateADD(operands)
 	command = 0
 	rd=operands[0]
@@ -89,12 +100,22 @@ def translateADD(operands)
 	command = set_bits(command, funct7, 31, 25)
 	funct3=operands[5]
 	command = set_bits(command, funct3, 14, 12)
+	return command
 end
+
+
+# ============================================
+
+# ============================================
+# SUB functions block
+# ============================================
 def SUB(rd, rs1, rs2)
 	skip_if_collect do
 	write_command(translateSUB([rd, rs1, rs2, 51, 32, 0]))
+	end
 end
-end
+
+
 def translateSUB(operands)
 	command = 0
 	rd=operands[0]
@@ -109,5 +130,10 @@ def translateSUB(operands)
 	command = set_bits(command, funct7, 31, 25)
 	funct3=operands[5]
 	command = set_bits(command, funct3, 14, 12)
+	return command
 end
+
+
+# ============================================
+
 end

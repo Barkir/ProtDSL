@@ -1,5 +1,5 @@
 SET_BITS_CODE = <<~CODE
-    def set_bits(number, value, from, to)
+    def set_bits(number, value, to, from)
         width = to - from + 1
         mask = ((1 << width) - 1) << from
         (number & ~mask) | ((value & ((1 << width) - 1)) << from)
