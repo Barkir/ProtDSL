@@ -1,5 +1,6 @@
 # Testing infra
-require_relative "constants"
+require_relative "constants_encoder"
+require_relative "constants_decoder"
 
 module SimInfra
     # @@instructions -array of instruction description
@@ -13,11 +14,36 @@ module SimInfra
         end
     end
 
+    # reset state
+    def siminfra_reset_module_state; @@instructions = []; end
+
+    # mixin for global counter, function returns 0,1,2,....
+    module GlobalCounter
+        @@counter = -1
+        def next_counter; @@counter += 1; end
+    end
+
+    Field = Struct.new(:name, :from, :to, :value)
+    ImmFieldPart = Struct.new(:name, :from, :to, :hi, :lo)
+
+    def field(name, from, to, value = nil)
+        Field.new(name, from, to, value).freeze
+    end
+    def immpart(name, from, to, hi, lo)
+        ImmFieldPart.new(name, from, to, hi, lo).freeze
+    end
+
+    def assert(condition, msg = nil); raise msg if !condition; end
+end
+
+module SimInfra
     def self.write_encoder_header(encoder)
 
-        encoder.write("\# <><><><><><><><><><><><><><><><><><><><><><><>\n")
+        encoder.write(FISH_CHAIN)
         encoder.write("\# Encoder Standard library functions block\n")
-        encoder.write("\# <><><><><><><><><><><><><><><><><><><><><><><>\n\n")
+        encoder.write(FISH_CHAIN)
+
+        # those are the header functions
         encoder.write(CLASS_MICROASM)
         encoder.write(INITIALIZE_CODE)
         encoder.write(PROG_CODE)
@@ -27,7 +53,9 @@ module SimInfra
         encoder.write(WRITE_COMMAND_CODE)
         encoder.write(LABEL_CODE)
         encoder.write(SKIP_IF_COLLECT_CODE)
-        encoder.write("\# <><><><><><><><><><><><><><><><><><><><><><><>\n\n")
+
+        encoder.write(FISH_CHAIN)
+
     end
 
     def self.create_translate_func(encoder, instr)
@@ -59,35 +87,60 @@ module SimInfra
 
         @@instructions.each do |instr|
 
-            encoder.write("\# ============================================\n")
+            encoder.write(EQUAL_CHAIN)
             encoder.write("\# #{instr.name} functions block\n")
-            encoder.write("\# ============================================\n")
+            encoder.write(EQUAL_CHAIN)
             create_func(encoder, instr)
             create_translate_func(encoder, instr)
-            encoder.write("\# ============================================\n\n")
+            encoder.write(EQUAL_CHAIN)
         end
         encoder.write(END_TERM)
         encoder.close()
     end
+end
 
-    # reset state
-    def siminfra_reset_module_state; @@instructions = []; end
+module SimInfra
+    def self.write_decoder_header(decoder)
+        decoder.write(GET_FIELD_CODE)
 
-    # mixin for global counter, function returns 0,1,2,....
-    module GlobalCounter
-        @@counter = -1
-        def next_counter; @@counter += 1; end
     end
 
-    Field = Struct.new(:name, :from, :to, :value)
-    ImmFieldPart = Struct.new(:name, :from, :to, :hi, :lo)
-
-    def field(name, from, to, value = nil)
-        Field.new(name, from, to, value).freeze
-    end
-    def immpart(name, from, to, hi, lo)
-        ImmFieldPart.new(name, from, to, hi, lo).freeze
+    def self.create_mask(from, to) # from < to
+        "0b" + "0" * (32 - (to - from + 1)) + "1" * (to - from + 1)
     end
 
-    def assert(condition, msg = nil); raise msg if !condition; end
+    def self.create_decoder
+        decoder = File.open("decoder.cpp", "w")
+        write_decoder_header(decoder)
+
+        @@instructions.each do |instr|
+        decoder.write("void execute#{instr.name}(SPU& spu, uint32_t command) {\n")
+        operands = instr.fields.select{|f| f.value == :reg}
+        .each_with_object({}){|f, h| h[f.name.to_s] = f}
+        instr.code.instance_variable_get(:@tree).each do |irstmt|
+            case irstmt.name.to_s
+            when "new_var"
+                decoder.write("\tint32_t #{irstmt.oprnds[0].name} = 0;\n")
+            when "getreg"
+                reg_to_load = operands[irstmt.oprnds[0].to_s]
+                reg_to_get = operands[irstmt.oprnds[1].to_s]
+                decoder.write("\t#{reg_to_load.name} = spu.regs[getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)})];\n")
+            when "add"
+                decoder.write("\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} + #{irstmt.oprnds[2].name};\n")
+            when "sub"
+                decoder.write("\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} - #{irstmt.oprnds[2].name};\n")
+            when "let"
+                decoder.write("\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name};\n");
+            when "setreg"
+                reg_to_load = operands[irstmt.oprnds[0].to_s]
+                reg_to_get  = operands[irstmt.oprnds[1].to_s]
+                decoder.write("\tspu.regs[getField(command, #{reg_to_load.to}, #{reg_to_load.from}, #{create_mask(reg_to_load.to, reg_to_load.from)})] = #{reg_to_get.name};\n")
+            else
+                print irstmt
+            end
+            print "\n"
+        end
+        decoder.write("}\n")
+        end
+    end
 end

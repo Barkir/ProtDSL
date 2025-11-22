@@ -99,3 +99,5 @@ CODE
 END_TERM="end\n"
 OPERANDS_ARRAY="operands"
 CLASS_MICROASM="class MicroAsm\n"
+FISH_CHAIN  = "\# <><><><><><><><><><><><><><><><><><><><><><><>\n"
+EQUAL_CHAIN = "\# ==============================================\n"
