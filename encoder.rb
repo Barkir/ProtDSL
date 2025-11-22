@@ -50,7 +50,25 @@ def run_binary(binary_filename="result.bin")
     print absolute_path
     system(TOY_SIM + "toy_interpreter " + absolute_path)
 end
-def translateADD(operands)
+
+def write_command(value)
+    @commands[@command_pc] = value
+
+    @pc += 4
+    @command_pc += 1
+end
+def skip_if_collect(&block)
+  if @collecting_labels
+    @pc += 4
+  else
+    yield
+  end
+end
+def ADD(rd, rs1, rs2)
+skip_if_collect do
+write_command()end
+end
+def translate ADD(operands)
 	command = 0
 	rd=operands[0]
 	command = set_bits(command, rd, 11, 7)
@@ -65,7 +83,11 @@ def translateADD(operands)
 	funct3=operands[5]
 	command = set_bits(command, funct3, 14, 12)
 end
-def translateSUB(operands)
+def SUB(rd, rs1, rs2)
+skip_if_collect do
+write_command()end
+end
+def translate SUB(operands)
 	command = 0
 	rd=operands[0]
 	command = set_bits(command, rd, 11, 7)

@@ -20,22 +20,41 @@ module SimInfra
         encoder.write(SET_BITS_CODE)
         encoder.write(SAVE_BINARY_CODE)
         encoder.write(RUN_BINARY_CODE)
+        encoder.write(WRITE_COMMAND_CODE)
+        encoder.write(SKIP_IF_COLLECT_CODE)
+
+    end
+
+    def self.create_translate_func(encoder, instr)
+        encoder.write("def translate #{instr.name.to_s}(#{OPERANDS_ARRAY})\n")
+        encoder.write("\tcommand = 0\n")
+        instr.fields.each_with_index do |elem, index|
+            encoder.write("\t#{elem.name}=#{OPERANDS_ARRAY}[#{index}]\n")
+            encoder.write("\tcommand = set_bits(command, #{elem.name}, #{elem.from}, #{elem.to})\n")
+        end
+        encoder.write(END_TERM)
+    end
+
+    def self.create_func(encoder, instr)
+        operands = instr.fields.select{|f| f.value == :reg}.map(&:name).join(", ")
+        opcodes  = instr.fields.select{|f| f.value != :reg}.map(&:value).join(", ")
+        print opcodes
+        # print instr
+        encoder.write("def #{instr.name}(#{operands})\n")
+        encoder.write("skip_if_collect do\n")
+        encoder.write("write_command()")
+        encoder.write(END_TERM)
+        encoder.write(END_TERM)
     end
 
     def self.create_encoder(msg=nil)
         encoder = File.open("encoder.rb", "w")
         write_encoder_header(encoder)
 
-
         @@instructions.each do |instr|
-            print instr
-            encoder.write("def translate" + instr.name.to_s + "(#{OPERANDS_ARRAY})\n")
-            encoder.write("\tcommand = 0\n")
-            instr.fields.each_with_index do |elem, index|
-                encoder.write("\t#{elem.name}=#{OPERANDS_ARRAY}[#{index}]\n")
-                encoder.write("\tcommand = set_bits(command, #{elem.name}, #{elem.from}, #{elem.to})\n")
-            end
-            encoder.write(END_TERM)
+            # print instr
+            create_func(encoder, instr)
+            create_translate_func(encoder, instr)
         end
         encoder.write(END_TERM)
         encoder.close()

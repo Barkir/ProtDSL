@@ -64,6 +64,29 @@ RUN_BINARY_CODE = <<~CODE
     end
 CODE
 
+WRITE_COMMAND_CODE = <<~CODE
+
+    def write_command(value)
+        @commands[@command_pc] = value
+
+        @pc += 4
+        @command_pc += 1
+    end
+CODE
+
+
+# this is a function to skip collecting labels
+# yield returns us to executing the block in arguments
+SKIP_IF_COLLECT_CODE = <<~CODE
+def skip_if_collect(&block)
+  if @collecting_labels
+    @pc += 4
+  else
+    yield
+  end
+end
+CODE
+
 END_TERM="end\n"
 OPERANDS_ARRAY="operands"
 CLASS_MICROASM="class MicroAsm\n"
