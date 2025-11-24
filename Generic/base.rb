@@ -36,6 +36,11 @@ module SimInfra
     def assert(condition, msg = nil); raise msg if !condition; end
 end
 
+
+# ==============================================
+# Encoder
+# ==============================================
+
 module SimInfra
     def self.write_encoder_header(encoder)
 
@@ -99,14 +104,63 @@ module SimInfra
     end
 end
 
+# ==============================================
+# Decoder
+# ==============================================
 module SimInfra
     def self.write_decoder_header(decoder)
         decoder.write(GET_FIELD_CODE)
+        decoder.write(MEMORY_STRUCT_CODE)
+        decoder.write(SPU_STRUCT_CODE)
+        decoder.write(GET_COMMANDS_CODE)
 
     end
 
     def self.create_mask(from, to) # from < to
         "0b" + "0" * (32 - (to - from + 1)) + "1" * (to - from + 1)
+    end
+
+    def self.getOperandsAsHashTable(instr)
+        operands = instr.fields.select{|f| f.value == :reg}
+        .each_with_object({}){|f, h| h[f.name.to_s] = f}
+        return operands
+    end
+
+    def self.write_ir(decoder, irstmt, operands)
+        case irstmt.name.to_s
+            when "getreg"
+                reg_to_load = operands[irstmt.oprnds[0].to_s]
+                reg_to_get = operands[irstmt.oprnds[1].to_s]
+                decoder.write("\t#{reg_to_load.name} = spu.regs[getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)})];\n")
+
+            when "setreg"
+                reg_to_load = operands[irstmt.oprnds[0].to_s]
+                reg_to_get  = operands[irstmt.oprnds[1].to_s]
+                decoder.write("\tspu.regs[getField(command, #{reg_to_load.to}, #{reg_to_load.from}, #{create_mask(reg_to_load.to, reg_to_load.from)})] = #{reg_to_get.name};\n")
+
+            when "add"
+                decoder.write("\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} + #{irstmt.oprnds[2].name};\n")
+
+            when "sub"
+                decoder.write("\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} - #{irstmt.oprnds[2].name};\n")
+
+            when "let"
+                decoder.write("\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name};\n");
+
+            when "new_var"
+                decoder.write("\tint32_t #{irstmt.oprnds[0].name} = 0;\n")
+
+            else
+                print irstmt
+            end
+    end
+
+    def self.create_main(decoder)
+        decoder.write(MAIN_CODE)
+    end
+
+    def self.create_init(decoder)
+
     end
 
     def self.create_decoder
@@ -115,32 +169,13 @@ module SimInfra
 
         @@instructions.each do |instr|
         decoder.write("void execute#{instr.name}(SPU& spu, uint32_t command) {\n")
-        operands = instr.fields.select{|f| f.value == :reg}
-        .each_with_object({}){|f, h| h[f.name.to_s] = f}
+        operands = getOperandsAsHashTable(instr)
         instr.code.instance_variable_get(:@tree).each do |irstmt|
-            case irstmt.name.to_s
-            when "new_var"
-                decoder.write("\tint32_t #{irstmt.oprnds[0].name} = 0;\n")
-            when "getreg"
-                reg_to_load = operands[irstmt.oprnds[0].to_s]
-                reg_to_get = operands[irstmt.oprnds[1].to_s]
-                decoder.write("\t#{reg_to_load.name} = spu.regs[getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)})];\n")
-            when "add"
-                decoder.write("\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} + #{irstmt.oprnds[2].name};\n")
-            when "sub"
-                decoder.write("\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} - #{irstmt.oprnds[2].name};\n")
-            when "let"
-                decoder.write("\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name};\n");
-            when "setreg"
-                reg_to_load = operands[irstmt.oprnds[0].to_s]
-                reg_to_get  = operands[irstmt.oprnds[1].to_s]
-                decoder.write("\tspu.regs[getField(command, #{reg_to_load.to}, #{reg_to_load.from}, #{create_mask(reg_to_load.to, reg_to_load.from)})] = #{reg_to_get.name};\n")
-            else
-                print irstmt
-            end
-            print "\n"
+            write_ir(decoder, irstmt, operands)
         end
         decoder.write("}\n")
         end
+        create_init(decoder)
+        create_main(decoder)
     end
 end
