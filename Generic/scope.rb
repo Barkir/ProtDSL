@@ -33,6 +33,8 @@ module SimInfra
         # redefine! add & sub will never be the same
         def add(a,b); binOp(a,b, :add); end
         def sub(a,b); binOp(a,b, :sub); end
+        def xor(a,b); binOp(a,b, :xor); end
+        def or(a, b); binOp(a,b, :or);  end
 
         private def tmpvar(type); var("_tmp#{next_counter}".to_sym, type); end
         # stmtadds statement into tree and returns operand[0]

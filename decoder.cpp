@@ -57,6 +57,11 @@ int get_commands(std::vector<uint32_t> *commands, const std::string& filename, s
     }
     return -1;
 }
+uint32_t getCommand(const std::vector<uint8_t> commands, size_t pc) {
+    uint32_t command = 0;
+    memcpy(&command, &commands[pc], 4);
+    return command;
+}
 void executeADD(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
 	int32_t rs1 = 0;
@@ -78,6 +83,46 @@ void executeSUB(SPU& spu, uint32_t command) {
 	_tmp1 = rs1 - rs2;
 	rd = _tmp1;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
+}
+void executeXOR(SPU& spu, uint32_t command) {
+	int32_t rd = 0;
+	int32_t rs1 = 0;
+	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
+	int32_t rs2 = 0;
+	rs2 = spu.regs[getField(command, 20, 24, 0b00000000000000000000000000011111)];
+	int32_t _tmp2 = 0;
+	rd = _tmp2;
+	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
+}
+void executeOR(SPU& spu, uint32_t command) {
+	int32_t rd = 0;
+	int32_t rs1 = 0;
+	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
+	int32_t rs2 = 0;
+	rs2 = spu.regs[getField(command, 20, 24, 0b00000000000000000000000000011111)];
+	int32_t _tmp3 = 0;
+	rd = _tmp3;
+	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
+}
+void init(std::vector<uint32_t> commands, size_t fsize) {
+    struct SPU spu(fsize);
+
+    std::vector<uint8_t>  commands_1byte(commands.size() * sizeof(uint32_t));
+    memcpy(commands_1byte.data(), commands.data(), commands_1byte.size());
+
+    size_t cm_sz = commands_1byte.size();
+    while (spu.pc < cm_sz) {
+
+        auto command = getCommand(commands_1byte, spu.pc);
+
+
+		switch(getField(command, 0, 6, 0b00000000000000000000000001111111)){
+			case 51:
+			case 51:
+			case 51:
+			case 51:
+		}
+	}
 }
 int main(int argc, char* argv[]) {
 

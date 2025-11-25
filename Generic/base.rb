@@ -113,6 +113,7 @@ module SimInfra
         decoder.write(MEMORY_STRUCT_CODE)
         decoder.write(SPU_STRUCT_CODE)
         decoder.write(GET_COMMANDS_CODE)
+        decoder.write(GET_COMMAND_CODE)
 
     end
 
@@ -160,6 +161,18 @@ module SimInfra
     end
 
     def self.create_init(decoder)
+        decoder.write(INIT_HEADER_CODE)
+                decoder.write("\t\tswitch(getField(command, #{OPCODE_FROM}, #{OPCODE_TO}, #{create_mask(OPCODE_FROM, OPCODE_TO)})){\n")
+
+                @@instructions.each do |instr|
+                    opcode_value = instr.fields.select{|f| f.name == :opcode}[0].value
+                    decoder.write("\t\t\tcase #{opcode_value}:\n")
+                end
+
+
+                decoder.write("\t\t}\n")
+        decoder.write("\t}\n")
+        decoder.write("}\n")
 
     end
 
@@ -175,6 +188,7 @@ module SimInfra
         end
         decoder.write("}\n")
         end
+        print @@instructions
         create_init(decoder)
         create_main(decoder)
     end

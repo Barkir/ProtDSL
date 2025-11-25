@@ -4,6 +4,14 @@ GET_FIELD_CODE = <<~CODE
     }
 CODE
 
+GET_COMMAND_CODE = <<~CODE
+uint32_t getCommand(const std::vector<uint8_t> commands, size_t pc) {
+    uint32_t command = 0;
+    memcpy(&command, &commands[pc], 4);
+    return command;
+}
+CODE
+
 MEMORY_STRUCT_CODE = <<~CODE
 struct MemorySPU {
 
@@ -87,3 +95,20 @@ int main(int argc, char* argv[]) {
 }
 CODE
 
+INIT_HEADER_CODE = <<~CODE
+void init(std::vector<uint32_t> commands, size_t fsize) {
+    struct SPU spu(fsize);
+
+    std::vector<uint8_t>  commands_1byte(commands.size() * sizeof(uint32_t));
+    memcpy(commands_1byte.data(), commands.data(), commands_1byte.size());
+
+    size_t cm_sz = commands_1byte.size();
+    while (spu.pc < cm_sz) {
+
+        auto command = getCommand(commands_1byte, spu.pc);
+
+
+CODE
+
+OPCODE_FROM = 0
+OPCODE_TO   = 6
