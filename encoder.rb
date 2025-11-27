@@ -137,7 +137,7 @@ end
 # ==============================================
 def XOR(rd, rs1, rs2)
 	skip_if_collect do
-	write_command(translateXOR([rd, rs1, rs2, 51, , ]))
+	write_command(translateXOR([rd, rs1, rs2, 51, 0, 4]))
 	end
 end
 
@@ -166,7 +166,7 @@ end
 # ==============================================
 def OR(rd, rs1, rs2)
 	skip_if_collect do
-	write_command(translateOR([rd, rs1, rs2, 51, , ]))
+	write_command(translateOR([rd, rs1, rs2, 51, 0, 6]))
 	end
 end
 

@@ -152,7 +152,7 @@ module SimInfra
                 decoder.write("\tint32_t #{irstmt.oprnds[0].name} = 0;\n")
 
             else
-                print irstmt
+                # print irstmt
             end
     end
 
@@ -188,8 +188,21 @@ module SimInfra
         end
         decoder.write("}\n")
         end
-        print @@instructions
+        # print @@instructions
         create_init(decoder)
         create_main(decoder)
+    end
+end
+
+
+module SimInfra
+    def self.create_decoding_tree()
+        instruction_map = {}
+        @@instructions.each do |instr|
+            neededFields = instr.fields.select{|f| f.value.is_a?(Numeric)}.map(&:value)
+            instruction_map[instr.name] = neededFields
+        end
+        print instruction_map
+        print "\n"
     end
 end
