@@ -196,13 +196,52 @@ end
 
 
 module SimInfra
+
+    def self.dump_tree()
+        file = open("tree.dot", "w")
+
+        @tree.each do |node|
+            node.drop(1).each do |item|
+                item.each do |key|
+                    print "depth#{node[0]}xxx#{key[0]}\n"
+                end
+                # print item
+                # print "\n"
+                print "\n"
+            end
+            # print "depth#{node[0]} -> depth#{node[0] + 1}\n"
+        end
+    end
+
+    def self.build_decoding_tree(instruction_map, depth=0)
+        if instruction_map.size == 1
+            return instruction_map.keys.first
+        end
+        first_values = instruction_map.values.first
+        if depth >= first_values.length
+            raise "Impossible to recognize instructions #{instruction_map.keys}"
+        end
+
+        groups = Hash.new {|h, k| h[k] = {} }
+        instruction_map.each do |name, values|
+            key = values[depth]
+            groups[key][name] = values
+        end
+        for key in groups.keys
+            @tree[depth][key] = groups[key]
+            build_decoding_tree(groups[key], depth+1)
+        end
+    end
+
     def self.create_decoding_tree()
+        @tree = Hash.new {|h, k| h[k] = {}}
         instruction_map = {}
         @@instructions.each do |instr|
             neededFields = instr.fields.select{|f| f.value.is_a?(Numeric)}.map(&:value)
             instruction_map[instr.name] = neededFields
         end
-        print instruction_map
-        print "\n"
+        build_decoding_tree(instruction_map, 0)
+        dump_tree()
+        return @tree
     end
 end
