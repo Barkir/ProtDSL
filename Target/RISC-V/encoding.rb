@@ -18,7 +18,10 @@ module SimInfra
             add: [0, 0],
             sub: [0, 1 << 5],
             xor: [0x4, 0x00],
-            or:  [0x6, 0x00]
+            or:  [0x6, 0x00],
+            and: [0x7, 0x00],
+            sll: [0x1, 0x00]
+
         }[name]
         format_r(0b0110011, funct3, funct7, rd, rs1, rs2)
     end

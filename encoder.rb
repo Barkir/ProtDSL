@@ -190,4 +190,62 @@ end
 
 
 # ==============================================
+# ==============================================
+# AND functions block
+# ==============================================
+def AND(rd, rs1, rs2)
+	skip_if_collect do
+	write_command(translateAND([rd, rs1, rs2, 51, 0, 7]))
+	end
+end
+
+
+def translateAND(operands)
+	command = 0
+	rd=operands[0]
+	command = set_bits(command, rd, 11, 7)
+	rs1=operands[1]
+	command = set_bits(command, rs1, 19, 15)
+	rs2=operands[2]
+	command = set_bits(command, rs2, 24, 20)
+	opcode=operands[3]
+	command = set_bits(command, opcode, 6, 0)
+	funct7=operands[4]
+	command = set_bits(command, funct7, 31, 25)
+	funct3=operands[5]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# SLL functions block
+# ==============================================
+def SLL(rd, rs1, rs2)
+	skip_if_collect do
+	write_command(translateSLL([rd, rs1, rs2, 51, 0, 1]))
+	end
+end
+
+
+def translateSLL(operands)
+	command = 0
+	rd=operands[0]
+	command = set_bits(command, rd, 11, 7)
+	rs1=operands[1]
+	command = set_bits(command, rs1, 19, 15)
+	rs2=operands[2]
+	command = set_bits(command, rs2, 24, 20)
+	opcode=operands[3]
+	command = set_bits(command, opcode, 6, 0)
+	funct7=operands[4]
+	command = set_bits(command, funct7, 31, 25)
+	funct3=operands[5]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
 end

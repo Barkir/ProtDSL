@@ -29,4 +29,16 @@ module RV32I
         asm { "XOR #{rd}, #{rs1}, #{rs2}"}
         code{rd[]= rs1 | rs2}
     }
+
+    Instruction(:AND, XReg(:rd), XReg(:rs1), XReg(:rs2)) {
+        encoding *format_r_alu(:and, rd, rs1, rs2)
+        asm {"AND #{rd}, #{rs1}, #{rs2}" }
+        code {rd[]= rs1 & rs2}
+    }
+    Instruction(:SLL, XReg(:rd), XReg(:rs1), XReg(:rs2)) {
+        encoding *format_r_alu(:sll, rd, rs1, rs2)
+        asm {"SLL #{rd}, #{rs1}, #{rs2}"}
+        code {rd[]=rs1 << rs2}
+    }
+
 end

@@ -194,27 +194,58 @@ module SimInfra
     end
 end
 
+# {51 => {0 => {0 => {ADD}, 4 => {XOR}, 6 => {OR}}, 32 => {0 => {SUB}}}}
 
 module SimInfra
 
-    def self.dump_tree()
-        file = open("tree.dot", "w")
-
-        @tree.each do |node|
-            node.drop(1).each do |item|
-                item.each do |key|
-                    print "depth#{node[0]}xxx#{key[0]}\n"
-                end
-                # print item
-                # print "\n"
-                print "\n"
-            end
-            # print "depth#{node[0]} -> depth#{node[0] + 1}\n"
-        end
+    def self.dump_tree(tree, filename = "tree.dot")
+    File.open(filename, "w") do |f|
+        f.write "digraph {\n"
+        f.write "  node [shape=box];\n"
+        dump_hash_node(f, tree, "root")
+        f.write "}\n"
     end
 
-    def self.build_decoding_tree(instruction_map, depth=0)
+    system("dot -Tpng #{filename} -o #{filename.sub('.dot', '.png')}")
+    end
+
+    def self.dump_hash_preorder(file, value, node_id)
+        if value.is_a?(Hash)
+        value.each do |k, v|
+        child_id = "#{node_id}_#{k}"
+        if v.is_a?(Hash)
+            file.write "  #{node_id} -> #{child_id} [label=\"#{k}\"];\n"
+            dump_hash_preorder(file, v, child_id)
+        else
+            file.write "  #{child_id} [label=\"#{k} = #{v}\", shape=ellipse];\n"
+            file.write "  #{node_id} -> #{child_id};\n"
+        end
+    end
+    else
+        file.write "  #{node_id} [label=\"#{value.inspect}\", shape=ellipse];\n"
+    end
+end
+
+    def self.dump_hash_node(file, value, node_id)
+    if value.is_a?(Hash)
+        keys_label = value.keys.map { |k| k.inspect }.join("\\n")
+        file.write "  #{node_id} [label=\"#{node_id}\\nKeys:\\n#{keys_label}\"];\n"
+
+        value.each_with_index do |(key, subvalue), idx|
+        child_id = "#{node_id}_k#{key}"
+        file.write "  #{node_id} -> #{child_id} [label=\"#{key.inspect}\"];\n"
+        dump_hash_preorder(file, subvalue, child_id)
+    end
+    else
+        file.write "  #{node_id} [label=\"#{node_id}\\n#{value.inspect}\", shape=ellipse];\n"
+    end
+end
+
+    def self.build_decoding_tree(tree, instruction_map, depth=0)
+        print "----------------------------------------------------------\n"
+        print "tree = ", @tree.to_s, " map = ", instruction_map.to_s + "\n"
         if instruction_map.size == 1
+            print "keys.first = " + instruction_map.keys.first.to_s + "\n"
             return instruction_map.keys.first
         end
         first_values = instruction_map.values.first
@@ -227,10 +258,13 @@ module SimInfra
             key = values[depth]
             groups[key][name] = values
         end
+        print "groups = ", groups.to_s + "\n"
         for key in groups.keys
-            @tree[depth][key] = groups[key]
-            build_decoding_tree(groups[key], depth+1)
+            tree[key] = Hash.new {|h, k| h[k] = {}}
+            tree[key] = build_decoding_tree(tree[key], groups[key], depth+1)
         end
+        return tree
+        print @tree.to_s + "\n"
     end
 
     def self.create_decoding_tree()
@@ -240,8 +274,9 @@ module SimInfra
             neededFields = instr.fields.select{|f| f.value.is_a?(Numeric)}.map(&:value)
             instruction_map[instr.name] = neededFields
         end
-        build_decoding_tree(instruction_map, 0)
-        dump_tree()
+        build_decoding_tree(@tree, instruction_map, 0)
+        print @tree.to_s + "\n"
+        dump_tree(@tree)
         return @tree
     end
 end

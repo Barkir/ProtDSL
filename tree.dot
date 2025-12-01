@@ -1,0 +1,18 @@
+digraph {
+  node [shape=box];
+  root [label="root\nKeys:\n51"];
+  root -> root_k51 [label="51"];
+  root_k51 -> root_k51_0 [label="0"];
+  root_k51_0_0 [label="0 = ADD", shape=ellipse];
+  root_k51_0 -> root_k51_0_0;
+  root_k51_0_4 [label="4 = XOR", shape=ellipse];
+  root_k51_0 -> root_k51_0_4;
+  root_k51_0_6 [label="6 = OR", shape=ellipse];
+  root_k51_0 -> root_k51_0_6;
+  root_k51_0_7 [label="7 = AND", shape=ellipse];
+  root_k51_0 -> root_k51_0_7;
+  root_k51_0_1 [label="1 = SLL", shape=ellipse];
+  root_k51_0 -> root_k51_0_1;
+  root_k51_32 [label="32 = SUB", shape=ellipse];
+  root_k51 -> root_k51_32;
+}
