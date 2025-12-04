@@ -124,6 +124,16 @@ void executeSLL(SPU& spu, uint32_t command) {
 	rd = _tmp5;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
 }
+void executeSRL(SPU& spu, uint32_t command) {
+	int32_t rd = 0;
+	int32_t rs1 = 0;
+	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
+	int32_t rs2 = 0;
+	rs2 = spu.regs[getField(command, 20, 24, 0b00000000000000000000000000011111)];
+	int32_t _tmp6 = 0;
+	rd = _tmp6;
+	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
+}
 void init(std::vector<uint32_t> commands, size_t fsize) {
     struct SPU spu(fsize);
 
@@ -137,6 +147,7 @@ void init(std::vector<uint32_t> commands, size_t fsize) {
 
 
 		switch(getField(command, 0, 6, 0b00000000000000000000000001111111)){
+			case 51:
 			case 51:
 			case 51:
 			case 51:

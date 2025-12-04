@@ -34,5 +34,6 @@ module SimInfra
         def |(other); @scope.or(self, other); end
         def &(other); @scope.and(self, other); end
         def <<(other); @scope.sll(self, other); end
+        def >>(other); @scope.srl(self, other); end
     end
 end

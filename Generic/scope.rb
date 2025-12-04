@@ -37,6 +37,7 @@ module SimInfra
         def or(a, b); binOp(a,b, :or);  end
         def and(a, b); binOp(a, b, :and) end
         def sll(a, b); binOp(a, b, :sll) end
+        def srl(a, b); binOp(a, b, :srl) end
 
         private def tmpvar(type); var("_tmp#{next_counter}".to_sym, type); end
         # stmtadds statement into tree and returns operand[0]

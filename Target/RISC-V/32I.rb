@@ -40,5 +40,10 @@ module RV32I
         asm {"SLL #{rd}, #{rs1}, #{rs2}"}
         code {rd[]=rs1 << rs2}
     }
+    Instruction(:SRL, XReg(:rd), XReg(:rs1), XReg(:rs2)) {
+        encoding *format_r_alu(:srl, rd, rs1, rs2)
+        asm {"SLL #{rd}, #{rs1}, #{rs2}"}
+        code {rd[]= rs1 >> rs2}
+    }
 
 end
