@@ -83,3 +83,9 @@ As the result we generate functions for all instructions and a `byte-code` file 
 |-----|-----------|
 | ADD r8, r8, r8    | `C0 0C 00 00`|
 
+### Decoder Tree
+
+The task is to write an effective decoder based on building a decoding tree. For now I finished generating a decoder tree based on the **fields** of the instructions such as: _opcode_, _funct7_, _funct3_.
+
+![decoder_tree](./md/tree.png)
+
