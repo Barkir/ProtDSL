@@ -1,3 +1,49 @@
+REGULAR_HEADER_CODE = <<~CODE
+    #include <vector>
+    #include <cstdint>
+    #include <string>
+    #include <fstream>
+    #include <iostream>
+    #include <cstring>
+
+    uint32_t getField(uint32_t command, int32_t from, int32_t to, int32_t mask);
+    uint32_t getCommand(const std::vector<uint8_t> commands, size_t pc);
+    int get_commands(std::vector<uint32_t> *commands, const std::string& filename, size_t *fsz);
+    size_t getFileSize(std::ifstream& file);
+
+    const size_t COMMAND_SIZE = 4;
+    const size_t DEFAULT_MEMORY_SIZE = 1024;
+    const size_t REG_SIZE = 32;
+    const size_t IMM_SIZE = 16;
+    const size_t BEQ_OFFSET_SIZE = 16;
+    const size_t LDP_OFFSET_SIZE = 11;
+    const size_t LD_OFFSET_SIZE  = 16;
+    const size_t ST_OFFSET_SIZE  = 16;
+    const size_t PC_INC = 4;
+
+    enum toyErrors {
+    TOY_SUCCESS,
+    TOY_FILE_READ_ERROR,
+    TOY_WRONG_FILE_SIZE,
+
+    TOY_FAILED = -1
+};
+
+CODE
+
+
+GET_FILE_SIZE_CODE = <<~CODE
+size_t getFileSize(std::ifstream& file) {
+    if (!file.is_open()) return 0;
+
+    file.seekg(0, std::ios::end);
+    size_t size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    return size;
+}
+CODE
+
 GET_FIELD_CODE = <<~CODE
     uint32_t getField(uint32_t command, int32_t from, int32_t to, int32_t mask) {
         return (command >> from) & mask;
@@ -64,7 +110,7 @@ int get_commands(std::vector<uint32_t> *commands, const std::string& filename, s
     if (file.is_open()) {
         std::vector<char> buffer(fSize);
         file.read(buffer.data(), fSize);
-        ON_DEBUG(hexDump(buffer));
+        // ON_DEBUG(hexDump(buffer));
 
         *commands = std::vector<uint32_t>(
         reinterpret_cast<const uint32_t*>(buffer.data()),
@@ -89,7 +135,7 @@ int main(int argc, char* argv[]) {
             return TOY_FAILED;
         }
 
-        ON_DEBUG(hexDump(commands));
+        // ON_DEBUG(hexDump(commands));
         init(commands, fsize);
     }
 }

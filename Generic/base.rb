@@ -109,6 +109,8 @@ end
 # ==============================================
 module SimInfra
     def self.write_decoder_header(decoder)
+        decoder.write(REGULAR_HEADER_CODE)
+        decoder.write(GET_FILE_SIZE_CODE)
         decoder.write(GET_FIELD_CODE)
         decoder.write(MEMORY_STRUCT_CODE)
         decoder.write(SPU_STRUCT_CODE)
@@ -162,15 +164,17 @@ module SimInfra
 
     def self.generate_switch(decoder, subtree, level)
             key = subtree.keys[0]
-            decoder.write("\t" * level + "int field_level#{level} = getField(command, #{key[:from]}, #{key[:to]})\n")
+            decoder.write("\t" * level + "int field_level#{level} = getField(command, #{key[:from]}, #{key[:to]}, #{create_mask(key[:from], key[:to])});\n")
             decoder.write("\t" *  level + "switch(field_level#{level}) {\n")
             for key in subtree.keys
-                decoder.write("\t" * level + "case #{key[:value]}:\n")
+                decoder.write("\t" * level + "case #{key[:value]}:\n", "\t" * level, "{\n")
                 if subtree[key].is_a?(Hash)
                     generate_switch(decoder, subtree[key], level + 1)
                 else
+                    decoder.write("\t" * level + "std::cout << \"#{subtree[key]}: \" << std::hex << command << std::dec << std::endl;\n")
                     decoder.write("\t" * level + "execute#{subtree[key].to_s}(spu, command); break;\n")
                 end
+                    decoder.write("\t" * level + "}\n")
             end
             decoder.write("\t" * level + "}\n")
     end
@@ -195,6 +199,7 @@ module SimInfra
         instr.code.instance_variable_get(:@tree).each do |irstmt|
             write_ir(decoder, irstmt, operands)
         end
+        decoder.write("spu.pc += PC_INC;\n")
         decoder.write("}\n")
         end
         # print @@instructions

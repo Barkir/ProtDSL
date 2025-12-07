@@ -1,3 +1,42 @@
+    #include <vector>
+    #include <cstdint>
+    #include <string>
+    #include <fstream>
+    #include <iostream>
+    #include <cstring>
+
+    uint32_t getField(uint32_t command, int32_t from, int32_t to, int32_t mask);
+    uint32_t getCommand(const std::vector<uint8_t> commands, size_t pc);
+    int get_commands(std::vector<uint32_t> *commands, const std::string& filename, size_t *fsz);
+    size_t getFileSize(std::ifstream& file);
+
+    const size_t COMMAND_SIZE = 4;
+    const size_t DEFAULT_MEMORY_SIZE = 1024;
+    const size_t REG_SIZE = 32;
+    const size_t IMM_SIZE = 16;
+    const size_t BEQ_OFFSET_SIZE = 16;
+    const size_t LDP_OFFSET_SIZE = 11;
+    const size_t LD_OFFSET_SIZE  = 16;
+    const size_t ST_OFFSET_SIZE  = 16;
+    const size_t PC_INC = 4;
+
+    enum toyErrors {
+    TOY_SUCCESS,
+    TOY_FILE_READ_ERROR,
+    TOY_WRONG_FILE_SIZE,
+
+    TOY_FAILED = -1
+};
+
+size_t getFileSize(std::ifstream& file) {
+    if (!file.is_open()) return 0;
+
+    file.seekg(0, std::ios::end);
+    size_t size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    return size;
+}
 uint32_t getField(uint32_t command, int32_t from, int32_t to, int32_t mask) {
     return (command >> from) & mask;
 }
@@ -46,7 +85,7 @@ int get_commands(std::vector<uint32_t> *commands, const std::string& filename, s
     if (file.is_open()) {
         std::vector<char> buffer(fSize);
         file.read(buffer.data(), fSize);
-        ON_DEBUG(hexDump(buffer));
+        // ON_DEBUG(hexDump(buffer));
 
         *commands = std::vector<uint32_t>(
         reinterpret_cast<const uint32_t*>(buffer.data()),
@@ -72,6 +111,7 @@ void executeADD(SPU& spu, uint32_t command) {
 	_tmp0 = rs1 + rs2;
 	rd = _tmp0;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
+spu.pc += PC_INC;
 }
 void executeSUB(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
@@ -83,6 +123,7 @@ void executeSUB(SPU& spu, uint32_t command) {
 	_tmp1 = rs1 - rs2;
 	rd = _tmp1;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
+spu.pc += PC_INC;
 }
 void executeXOR(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
@@ -93,6 +134,7 @@ void executeXOR(SPU& spu, uint32_t command) {
 	int32_t _tmp2 = 0;
 	rd = _tmp2;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
+spu.pc += PC_INC;
 }
 void executeOR(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
@@ -103,6 +145,7 @@ void executeOR(SPU& spu, uint32_t command) {
 	int32_t _tmp3 = 0;
 	rd = _tmp3;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
+spu.pc += PC_INC;
 }
 void executeAND(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
@@ -113,6 +156,7 @@ void executeAND(SPU& spu, uint32_t command) {
 	int32_t _tmp4 = 0;
 	rd = _tmp4;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
+spu.pc += PC_INC;
 }
 void executeSLL(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
@@ -123,6 +167,7 @@ void executeSLL(SPU& spu, uint32_t command) {
 	int32_t _tmp5 = 0;
 	rd = _tmp5;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
+spu.pc += PC_INC;
 }
 void executeSRL(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
@@ -133,6 +178,7 @@ void executeSRL(SPU& spu, uint32_t command) {
 	int32_t _tmp6 = 0;
 	rd = _tmp6;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
+spu.pc += PC_INC;
 }
 void init(std::vector<uint32_t> commands, size_t fsize) {
     struct SPU spu(fsize);
@@ -146,30 +192,55 @@ void init(std::vector<uint32_t> commands, size_t fsize) {
         auto command = getCommand(commands_1byte, spu.pc);
 
 
-		int field_level2 = getField(command, 0, 6)
+		int field_level2 = getField(command, 0, 6, 0b00000000000000000000000001111111);
 		switch(field_level2) {
 		case 51:
-			int field_level3 = getField(command, 25, 31)
+		{
+			int field_level3 = getField(command, 25, 31, 0b00000000000000000000000001111111);
 			switch(field_level3) {
 			case 0:
-				int field_level4 = getField(command, 12, 14)
+			{
+				int field_level4 = getField(command, 12, 14, 0b00000000000000000000000000000111);
 				switch(field_level4) {
 				case 0:
+				{
+				std::cout << "ADD: " << std::hex << command << std::dec << std::endl;
 				executeADD(spu, command); break;
+				}
 				case 4:
+				{
+				std::cout << "XOR: " << std::hex << command << std::dec << std::endl;
 				executeXOR(spu, command); break;
+				}
 				case 6:
+				{
+				std::cout << "OR: " << std::hex << command << std::dec << std::endl;
 				executeOR(spu, command); break;
+				}
 				case 7:
+				{
+				std::cout << "AND: " << std::hex << command << std::dec << std::endl;
 				executeAND(spu, command); break;
+				}
 				case 1:
+				{
+				std::cout << "SLL: " << std::hex << command << std::dec << std::endl;
 				executeSLL(spu, command); break;
+				}
 				case 5:
+				{
+				std::cout << "SRL: " << std::hex << command << std::dec << std::endl;
 				executeSRL(spu, command); break;
 				}
+				}
+			}
 			case 32:
+			{
+			std::cout << "SUB: " << std::hex << command << std::dec << std::endl;
 			executeSUB(spu, command); break;
 			}
+			}
+		}
 		}
 	}
 }
@@ -184,7 +255,7 @@ int main(int argc, char* argv[]) {
             return TOY_FAILED;
         }
 
-        ON_DEBUG(hexDump(commands));
+        // ON_DEBUG(hexDump(commands));
         init(commands, fsize);
     }
 }
