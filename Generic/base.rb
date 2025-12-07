@@ -107,7 +107,65 @@ end
 # ==============================================
 # Decoder
 # ==============================================
+
 module SimInfra
+
+    class DecoderDSL
+        class << self
+
+
+        def create_mask(from, to) # from < to
+            "0b" + "0" * (32 - (to - from + 1)) + "1" * (to - from + 1)
+        end
+
+            def add_instruction(name, &tmpl)
+                instructions[name.to_s] = tmpl
+            end
+
+            def instructions
+                @instructions ||= {}
+            end
+
+
+            def write_ir(decoder, irstmt, operands)
+                template = instructions[irstmt.name.to_s]
+                if template
+                    decoder.write(template.call(irstmt, operands))
+                end
+            end
+
+        end
+
+        self.add_instruction :getreg do |irstmt, operands|
+            reg_to_load = operands[irstmt.oprnds[0].to_s]
+            reg_to_get = operands[irstmt.oprnds[1].to_s]
+            "\t#{reg_to_load.name} = spu.regs[getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)})];\n"
+        end
+
+        self.add_instruction :setreg do |irstmt, operands|
+            reg_to_load = operands[irstmt.oprnds[0].to_s]
+            reg_to_get  = operands[irstmt.oprnds[1].to_s]
+            "\tspu.regs[getField(command, #{reg_to_load.to}, #{reg_to_load.from}, #{create_mask(reg_to_load.to, reg_to_load.from)})] = #{reg_to_get.name};\n"
+        end
+
+        self.add_instruction :add do |irstmt, operands|
+            "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} + #{irstmt.oprnds[2].name};\n"
+        end
+
+        self.add_instruction :sub do |irstmt, operands|
+            "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} - #{irstmt.oprnds[2].name};\n"
+        end
+
+        self.add_instruction :let do |irstmt, operands|
+            "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name};\n"
+        end
+
+        self.add_instruction :new_var do |irstmt, operands|
+            "\tint32_t #{irstmt.oprnds[0].name} = 0;\n"
+        end
+    end
+
+
     def self.write_decoder_header(decoder)
         decoder.write(GET_FIELD_CODE)
         decoder.write(MEMORY_STRUCT_CODE)
@@ -127,50 +185,13 @@ module SimInfra
         return operands
     end
 
-    def self.write_ir(decoder, irstmt, operands)
-        case irstmt.name.to_s
-            when "getreg"
-                reg_to_load = operands[irstmt.oprnds[0].to_s]
-                reg_to_get = operands[irstmt.oprnds[1].to_s]
-                decoder.write("\t#{reg_to_load.name} = spu.regs[getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)})];\n")
-
-            when "setreg"
-                reg_to_load = operands[irstmt.oprnds[0].to_s]
-                reg_to_get  = operands[irstmt.oprnds[1].to_s]
-                decoder.write("\tspu.regs[getField(command, #{reg_to_load.to}, #{reg_to_load.from}, #{create_mask(reg_to_load.to, reg_to_load.from)})] = #{reg_to_get.name};\n")
-
-            when "add"
-                decoder.write("\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} + #{irstmt.oprnds[2].name};\n")
-
-            when "sub"
-                decoder.write("\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} - #{irstmt.oprnds[2].name};\n")
-
-            when "let"
-                decoder.write("\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name};\n");
-
-            when "new_var"
-                decoder.write("\tint32_t #{irstmt.oprnds[0].name} = 0;\n")
-
-            else
-                # print irstmt
-            end
-    end
-
     def self.create_main(decoder)
         decoder.write(MAIN_CODE)
     end
 
     def self.create_init(decoder)
         decoder.write(INIT_HEADER_CODE)
-                decoder.write("\t\tswitch(getField(command, #{OPCODE_FROM}, #{OPCODE_TO}, #{create_mask(OPCODE_FROM, OPCODE_TO)})){\n")
 
-                @@instructions.each do |instr|
-                    opcode_value = instr.fields.select{|f| f.name == :opcode}[0].value
-                    decoder.write("\t\t\tcase #{opcode_value}:\n")
-                end
-
-
-                decoder.write("\t\t}\n")
         decoder.write("\t}\n")
         decoder.write("}\n")
 
@@ -178,13 +199,14 @@ module SimInfra
 
     def self.create_decoder
         decoder = File.open("decoder.cpp", "w")
+        create_decoding_tree()
         write_decoder_header(decoder)
 
         @@instructions.each do |instr|
         decoder.write("void execute#{instr.name}(SPU& spu, uint32_t command) {\n")
         operands = getOperandsAsHashTable(instr)
         instr.code.instance_variable_get(:@tree).each do |irstmt|
-            write_ir(decoder, irstmt, operands)
+            DecoderDSL.write_ir(decoder, irstmt, operands)
         end
         decoder.write("}\n")
         end
@@ -195,6 +217,11 @@ module SimInfra
 end
 
 # {51 => {0 => {0 => {ADD}, 4 => {XOR}, 6 => {OR}}, 32 => {0 => {SUB}}}}
+
+
+# ==============================================
+# Decoding Tree
+# ==============================================
 
 module SimInfra
 
@@ -211,20 +238,20 @@ module SimInfra
 
     def self.dump_hash_preorder(file, value, node_id)
         if value.is_a?(Hash)
-        value.each do |k, v|
-        child_id = "#{node_id}_#{k}"
-        if v.is_a?(Hash)
-            file.write "  #{node_id} -> #{child_id} [label=\"#{k}\"];\n"
-            dump_hash_preorder(file, v, child_id)
+            value.each do |k, v|
+            child_id = "#{node_id}_#{k}"
+            if v.is_a?(Hash)
+                file.write "  #{node_id} -> #{child_id} [label=\"#{k}\"];\n"
+                dump_hash_preorder(file, v, child_id)
+            else
+                file.write "  #{child_id} [label=\"#{k} = #{v}\", shape=ellipse];\n"
+                file.write "  #{node_id} -> #{child_id};\n"
+            end
+        end
         else
-            file.write "  #{child_id} [label=\"#{k} = #{v}\", shape=ellipse];\n"
-            file.write "  #{node_id} -> #{child_id};\n"
+            file.write "  #{node_id} [label=\"#{value.inspect}\", shape=ellipse];\n"
         end
     end
-    else
-        file.write "  #{node_id} [label=\"#{value.inspect}\", shape=ellipse];\n"
-    end
-end
 
     def self.dump_hash_node(file, value, node_id)
     if value.is_a?(Hash)

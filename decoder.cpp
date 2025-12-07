@@ -146,15 +146,6 @@ void init(std::vector<uint32_t> commands, size_t fsize) {
         auto command = getCommand(commands_1byte, spu.pc);
 
 
-		switch(getField(command, 0, 6, 0b00000000000000000000000001111111)){
-			case 51:
-			case 51:
-			case 51:
-			case 51:
-			case 51:
-			case 51:
-			case 51:
-		}
 	}
 }
 int main(int argc, char* argv[]) {
