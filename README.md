@@ -83,9 +83,140 @@ As the result we generate functions for all instructions and a `byte-code` file 
 |-----|-----------|
 | ADD r8, r8, r8    | `C0 0C 00 00`|
 
-### Decoder Tree
+### Decoder Tree && Decoder
 
 The task is to write an effective decoder based on building a decoding tree. For now I finished generating a decoder tree based on the **fields** of the instructions such as: _opcode_, _funct7_, _funct3_.
 
 ![decoder_tree](./md/tree.png)
 
+### How to decode a program on RISCV IM32 Architecture using my decoder?
+
+1. Encode it using encoder - `ruby add_sub.rb`
+2. run `generate_decoder_binary.sh`
+3. run `riscv_decode result.bin`
+
+### How is it actually generated?
+    The whole decoding pipeline can be seen in base.rb in Decoder section, here I explain important moments
+
+1. We have a function `create_decoder`
+    - write a header (important functions and structures in C++ decoding engine)
+    - create a decoder tree
+    - create `execute functions` for every instructions in the .yaml where all the semantics, registers and other metainfo described.
+
+2. We have a class called `DecoderDSL` where we can easily define basic operations such as `add`, `getreg` and generate them as a C++ code.
+
+<details>
+<summary>
+DecoderDSL code example
+</summary>
+
+```ruby
+        self.add_instruction :getreg do |irstmt, operands|
+            reg_to_load = operands[irstmt.oprnds[0].to_s]
+            reg_to_get = operands[irstmt.oprnds[1].to_s]
+            "\t#{reg_to_load.name} = spu.regs[getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)})];\n
+            \t#{reg_to_load.name}_name = getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)});\n"
+        end
+
+        self.add_instruction :setreg do |irstmt, operands|
+            reg_to_load = operands[irstmt.oprnds[0].to_s]
+            reg_to_get  = operands[irstmt.oprnds[1].to_s]
+            "\tspu.regs[getField(command, #{reg_to_load.to}, #{reg_to_load.from}, #{create_mask(reg_to_load.to, reg_to_load.from)})] = #{reg_to_get.name};\n"
+        end
+
+```
+
+</details>
+
+3. We have a function `create_init` where we recursively generate a `switch of switches` based on **decoder tree** we've built on previous stage.
+
+<details>
+<summary>
+Generated switch example
+</summary>
+
+
+```c++
+	switch(field_level2) {
+		case 51:
+		{
+			int field_level3 = getField(command, 25, 31, 0b00000000000000000000000001111111);
+			switch(field_level3) {
+			case 0:
+			{
+				int field_level4 = getField(command, 12, 14, 0b00000000000000000000000000000111);
+				switch(field_level4) {
+				case 0:
+				{
+				executeADD(spu, command);
+				break;}
+				case 4:
+				{
+				executeXOR(spu, command);
+				break;}
+				case 6:
+				{
+				executeOR(spu, command);
+				break;}
+				case 7:
+				{
+				executeAND(spu, command);
+				break;}
+				case 1:
+				{
+				executeSLL(spu, command);
+				break;}
+				case 5:
+				{
+				executeSRL(spu, command);
+				break;}
+				}
+			break;}
+			case 32:
+			{
+			executeSUB(spu, command);
+			break;}
+			}
+		break;}
+		}
+	}
+
+```
+
+</details>
+
+4. There also some details like `incrementing pc`, or `writing logs`, but basically that's all about making a decoder generator.
+
+### Decoder usecase example.
+
+We have this mircoassmbler code example
+
+```ruby
+require_relative "../encoder"
+
+asm = MicroAsm.new
+asm.prog do
+    ADD r9, r9, r10
+    XOR r8, r8, r8
+    XOR r8, r9, r12
+    ADD r9, r9, r10
+    SUB r8, r8, r8
+    XOR r8, r9, r12
+end
+
+```
+
+- running `ruby add_sub.rb`
+- `result.bin` is generated which looks like this (6 4-byte commands)
+![alt text](./md/bytecode.png)
+- running `ricsv_decode result.bin` and getting this
+```
+ADD      rd=-1    rs1=9    rs2=10:         a484b3
+XOR      rd=-1    rs1=8    rs2=8:          844433
+XOR      rd=-1    rs1=9    rs2=12:         c4c433
+ADD      rd=-1    rs1=9    rs2=10:         a484b3
+SUB      rd=-1    rs1=8    rs2=8:          40840433
+XOR      rd=-1    rs1=9    rs2=12:         c4c433
+```
+
+The dump shows us _command name_, _use of registers_ and _command in hex_
