@@ -5,5 +5,4 @@ require_relative "Target/RISC-V/32I.rb"
 
 SimInfra.serialize
 SimInfra.create_encoder
-SimInfra.create_decoding_tree
 SimInfra.create_decoder

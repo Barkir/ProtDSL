@@ -146,6 +146,31 @@ void init(std::vector<uint32_t> commands, size_t fsize) {
         auto command = getCommand(commands_1byte, spu.pc);
 
 
+		int field_level2 = getField(command, 0, 6)
+		switch(field_level2) {
+		case 51:
+			int field_level3 = getField(command, 25, 31)
+			switch(field_level3) {
+			case 0:
+				int field_level4 = getField(command, 12, 14)
+				switch(field_level4) {
+				case 0:
+				executeADD(spu, command); break;
+				case 4:
+				executeXOR(spu, command); break;
+				case 6:
+				executeOR(spu, command); break;
+				case 7:
+				executeAND(spu, command); break;
+				case 1:
+				executeSLL(spu, command); break;
+				case 5:
+				executeSRL(spu, command); break;
+				}
+			case 32:
+			executeSUB(spu, command); break;
+			}
+		}
 	}
 }
 int main(int argc, char* argv[]) {

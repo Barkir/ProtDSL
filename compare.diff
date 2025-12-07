@@ -1,0 +1,20 @@
+{51 =>
+    {0 =>
+        {0 =>  :ADD,
+         4 => :XOR,
+         6 => :OR,
+         7 => :AND,
+         1 => :SLL,
+         5 => :SRL},
+    32 => :SUB}}
+
+
+{{value: 51, from: 0, to: 6}
+    => {{value: 0, from: 25, to: 31}
+        => {{value: 0, from: 12, to: 14} => :ADD,
+            {value: 4, from: 12, to: 14} => :XOR,
+            {value: 6, from: 12, to: 14} => :OR,
+            {value: 7, from: 12, to: 14} => :AND,
+            {value: 1, from: 12, to: 14} => :SLL,
+            {value: 5, from: 12, to: 14} => :SRL},
+        {value: 32, from: 25, to: 31} => :SUB}}
