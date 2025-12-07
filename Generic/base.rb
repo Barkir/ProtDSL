@@ -172,9 +172,9 @@ module SimInfra
                     generate_switch(decoder, subtree[key], level + 1)
                 else
                     decoder.write("\t" * level + "std::cout << \"#{subtree[key]}: \" << std::hex << command << std::dec << std::endl;\n")
-                    decoder.write("\t" * level + "execute#{subtree[key].to_s}(spu, command); break;\n")
+                    decoder.write("\t" * level + "execute#{subtree[key].to_s}(spu, command);\n")
                 end
-                    decoder.write("\t" * level + "}\n")
+                    decoder.write("\t" * level + "break;}\n")
             end
             decoder.write("\t" * level + "}\n")
     end

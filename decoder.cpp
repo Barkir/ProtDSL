@@ -205,42 +205,42 @@ void init(std::vector<uint32_t> commands, size_t fsize) {
 				case 0:
 				{
 				std::cout << "ADD: " << std::hex << command << std::dec << std::endl;
-				executeADD(spu, command); break;
-				}
+				executeADD(spu, command);
+				break;}
 				case 4:
 				{
 				std::cout << "XOR: " << std::hex << command << std::dec << std::endl;
-				executeXOR(spu, command); break;
-				}
+				executeXOR(spu, command);
+				break;}
 				case 6:
 				{
 				std::cout << "OR: " << std::hex << command << std::dec << std::endl;
-				executeOR(spu, command); break;
-				}
+				executeOR(spu, command);
+				break;}
 				case 7:
 				{
 				std::cout << "AND: " << std::hex << command << std::dec << std::endl;
-				executeAND(spu, command); break;
-				}
+				executeAND(spu, command);
+				break;}
 				case 1:
 				{
 				std::cout << "SLL: " << std::hex << command << std::dec << std::endl;
-				executeSLL(spu, command); break;
-				}
+				executeSLL(spu, command);
+				break;}
 				case 5:
 				{
 				std::cout << "SRL: " << std::hex << command << std::dec << std::endl;
-				executeSRL(spu, command); break;
+				executeSRL(spu, command);
+				break;}
 				}
-				}
-			}
+			break;}
 			case 32:
 			{
 			std::cout << "SUB: " << std::hex << command << std::dec << std::endl;
-			executeSUB(spu, command); break;
+			executeSUB(spu, command);
+			break;}
 			}
-			}
-		}
+		break;}
 		}
 	}
 }
