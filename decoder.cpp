@@ -4,6 +4,7 @@
     #include <fstream>
     #include <iostream>
     #include <cstring>
+    #include <iomanip>
 
     uint32_t getField(uint32_t command, int32_t from, int32_t to, int32_t mask);
     uint32_t getCommand(const std::vector<uint8_t> commands, size_t pc);
@@ -103,88 +104,212 @@ uint32_t getCommand(const std::vector<uint8_t> commands, size_t pc) {
 }
 void executeADD(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
+
+            	int32_t rd_name = -1;
 	int32_t rs1 = 0;
+
+            	int32_t rs1_name = -1;
 	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
+
+            	rs1_name = getField(command, 15, 19, 0b00000000000000000000000000011111);
 	int32_t rs2 = 0;
+
+            	int32_t rs2_name = -1;
 	rs2 = spu.regs[getField(command, 20, 24, 0b00000000000000000000000000011111)];
+
+            	rs2_name = getField(command, 20, 24, 0b00000000000000000000000000011111);
 	int32_t _tmp0 = 0;
+
+            	int32_t _tmp0_name = -1;
 	_tmp0 = rs1 + rs2;
 	rd = _tmp0;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
-	std::cout << "ADD \t " <<"rd="<<rd<< " 	 "<<"rs1="<<rs1<< " 	 "<<"rs2="<<rs2 <<":" << std::hex << "		" << command << std::dec << std::endl;
+	std::cout <<
+                    "ADD \t "
+                    <<"rd="<<rd_name<< std::setw(8)<<"rs1="<<rs1_name<< std::setw(8)<<"rs2="<<rs2_name
+                    <<":"
+                    << std::right << std::hex <<
+                    std::setw(15) << std::setfill(' ') << command << std::dec << std::endl;
 	spu.pc += PC_INC;
 }
 void executeSUB(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
+
+            	int32_t rd_name = -1;
 	int32_t rs1 = 0;
+
+            	int32_t rs1_name = -1;
 	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
+
+            	rs1_name = getField(command, 15, 19, 0b00000000000000000000000000011111);
 	int32_t rs2 = 0;
+
+            	int32_t rs2_name = -1;
 	rs2 = spu.regs[getField(command, 20, 24, 0b00000000000000000000000000011111)];
+
+            	rs2_name = getField(command, 20, 24, 0b00000000000000000000000000011111);
 	int32_t _tmp1 = 0;
+
+            	int32_t _tmp1_name = -1;
 	_tmp1 = rs1 - rs2;
 	rd = _tmp1;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
-	std::cout << "SUB \t " <<"rd="<<rd<< " 	 "<<"rs1="<<rs1<< " 	 "<<"rs2="<<rs2 <<":" << std::hex << "		" << command << std::dec << std::endl;
+	std::cout <<
+                    "SUB \t "
+                    <<"rd="<<rd_name<< std::setw(8)<<"rs1="<<rs1_name<< std::setw(8)<<"rs2="<<rs2_name
+                    <<":"
+                    << std::right << std::hex <<
+                    std::setw(15) << std::setfill(' ') << command << std::dec << std::endl;
 	spu.pc += PC_INC;
 }
 void executeXOR(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
+
+            	int32_t rd_name = -1;
 	int32_t rs1 = 0;
+
+            	int32_t rs1_name = -1;
 	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
+
+            	rs1_name = getField(command, 15, 19, 0b00000000000000000000000000011111);
 	int32_t rs2 = 0;
+
+            	int32_t rs2_name = -1;
 	rs2 = spu.regs[getField(command, 20, 24, 0b00000000000000000000000000011111)];
+
+            	rs2_name = getField(command, 20, 24, 0b00000000000000000000000000011111);
 	int32_t _tmp2 = 0;
+
+            	int32_t _tmp2_name = -1;
+	_tmp2 = rs1 ^ rs2;
 	rd = _tmp2;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
-	std::cout << "XOR \t " <<"rd="<<rd<< " 	 "<<"rs1="<<rs1<< " 	 "<<"rs2="<<rs2 <<":" << std::hex << "		" << command << std::dec << std::endl;
+	std::cout <<
+                    "XOR \t "
+                    <<"rd="<<rd_name<< std::setw(8)<<"rs1="<<rs1_name<< std::setw(8)<<"rs2="<<rs2_name
+                    <<":"
+                    << std::right << std::hex <<
+                    std::setw(15) << std::setfill(' ') << command << std::dec << std::endl;
 	spu.pc += PC_INC;
 }
 void executeOR(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
+
+            	int32_t rd_name = -1;
 	int32_t rs1 = 0;
+
+            	int32_t rs1_name = -1;
 	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
+
+            	rs1_name = getField(command, 15, 19, 0b00000000000000000000000000011111);
 	int32_t rs2 = 0;
+
+            	int32_t rs2_name = -1;
 	rs2 = spu.regs[getField(command, 20, 24, 0b00000000000000000000000000011111)];
+
+            	rs2_name = getField(command, 20, 24, 0b00000000000000000000000000011111);
 	int32_t _tmp3 = 0;
+
+            	int32_t _tmp3_name = -1;
+	_tmp3 = rs1 | rs2;
 	rd = _tmp3;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
-	std::cout << "OR \t " <<"rd="<<rd<< " 	 "<<"rs1="<<rs1<< " 	 "<<"rs2="<<rs2 <<":" << std::hex << "		" << command << std::dec << std::endl;
+	std::cout <<
+                    "OR \t "
+                    <<"rd="<<rd_name<< std::setw(8)<<"rs1="<<rs1_name<< std::setw(8)<<"rs2="<<rs2_name
+                    <<":"
+                    << std::right << std::hex <<
+                    std::setw(15) << std::setfill(' ') << command << std::dec << std::endl;
 	spu.pc += PC_INC;
 }
 void executeAND(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
+
+            	int32_t rd_name = -1;
 	int32_t rs1 = 0;
+
+            	int32_t rs1_name = -1;
 	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
+
+            	rs1_name = getField(command, 15, 19, 0b00000000000000000000000000011111);
 	int32_t rs2 = 0;
+
+            	int32_t rs2_name = -1;
 	rs2 = spu.regs[getField(command, 20, 24, 0b00000000000000000000000000011111)];
+
+            	rs2_name = getField(command, 20, 24, 0b00000000000000000000000000011111);
 	int32_t _tmp4 = 0;
+
+            	int32_t _tmp4_name = -1;
+	_tmp4 = rs1 & rs2;
 	rd = _tmp4;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
-	std::cout << "AND \t " <<"rd="<<rd<< " 	 "<<"rs1="<<rs1<< " 	 "<<"rs2="<<rs2 <<":" << std::hex << "		" << command << std::dec << std::endl;
+	std::cout <<
+                    "AND \t "
+                    <<"rd="<<rd_name<< std::setw(8)<<"rs1="<<rs1_name<< std::setw(8)<<"rs2="<<rs2_name
+                    <<":"
+                    << std::right << std::hex <<
+                    std::setw(15) << std::setfill(' ') << command << std::dec << std::endl;
 	spu.pc += PC_INC;
 }
 void executeSLL(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
+
+            	int32_t rd_name = -1;
 	int32_t rs1 = 0;
+
+            	int32_t rs1_name = -1;
 	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
+
+            	rs1_name = getField(command, 15, 19, 0b00000000000000000000000000011111);
 	int32_t rs2 = 0;
+
+            	int32_t rs2_name = -1;
 	rs2 = spu.regs[getField(command, 20, 24, 0b00000000000000000000000000011111)];
+
+            	rs2_name = getField(command, 20, 24, 0b00000000000000000000000000011111);
 	int32_t _tmp5 = 0;
+
+            	int32_t _tmp5_name = -1;
+	_tmp5 = rs1 << rs2;
 	rd = _tmp5;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
-	std::cout << "SLL \t " <<"rd="<<rd<< " 	 "<<"rs1="<<rs1<< " 	 "<<"rs2="<<rs2 <<":" << std::hex << "		" << command << std::dec << std::endl;
+	std::cout <<
+                    "SLL \t "
+                    <<"rd="<<rd_name<< std::setw(8)<<"rs1="<<rs1_name<< std::setw(8)<<"rs2="<<rs2_name
+                    <<":"
+                    << std::right << std::hex <<
+                    std::setw(15) << std::setfill(' ') << command << std::dec << std::endl;
 	spu.pc += PC_INC;
 }
 void executeSRL(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
+
+            	int32_t rd_name = -1;
 	int32_t rs1 = 0;
+
+            	int32_t rs1_name = -1;
 	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
+
+            	rs1_name = getField(command, 15, 19, 0b00000000000000000000000000011111);
 	int32_t rs2 = 0;
+
+            	int32_t rs2_name = -1;
 	rs2 = spu.regs[getField(command, 20, 24, 0b00000000000000000000000000011111)];
+
+            	rs2_name = getField(command, 20, 24, 0b00000000000000000000000000011111);
 	int32_t _tmp6 = 0;
+
+            	int32_t _tmp6_name = -1;
+	_tmp6 = rs1 >> rs2;
 	rd = _tmp6;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
-	std::cout << "SRL \t " <<"rd="<<rd<< " 	 "<<"rs1="<<rs1<< " 	 "<<"rs2="<<rs2 <<":" << std::hex << "		" << command << std::dec << std::endl;
+	std::cout <<
+                    "SRL \t "
+                    <<"rd="<<rd_name<< std::setw(8)<<"rs1="<<rs1_name<< std::setw(8)<<"rs2="<<rs2_name
+                    <<":"
+                    << std::right << std::hex <<
+                    std::setw(15) << std::setfill(' ') << command << std::dec << std::endl;
 	spu.pc += PC_INC;
 }
 void init(std::vector<uint32_t> commands, size_t fsize) {

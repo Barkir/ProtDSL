@@ -5,6 +5,7 @@ REGULAR_HEADER_CODE = <<~CODE
     #include <fstream>
     #include <iostream>
     #include <cstring>
+    #include <iomanip>
 
     uint32_t getField(uint32_t command, int32_t from, int32_t to, int32_t mask);
     uint32_t getCommand(const std::vector<uint8_t> commands, size_t pc);

@@ -128,6 +128,7 @@ module SimInfra
             def write_ir(decoder, irstmt, operands)
                 template = instructions[irstmt.name.to_s]
                 if template
+
                     decoder.write(template.call(irstmt, operands))
                 end
             end
@@ -137,7 +138,8 @@ module SimInfra
         self.add_instruction :getreg do |irstmt, operands|
             reg_to_load = operands[irstmt.oprnds[0].to_s]
             reg_to_get = operands[irstmt.oprnds[1].to_s]
-            "\t#{reg_to_load.name} = spu.regs[getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)})];\n"
+            "\t#{reg_to_load.name} = spu.regs[getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)})];\n
+            \t#{reg_to_load.name}_name = getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)});\n"
         end
 
         self.add_instruction :setreg do |irstmt, operands|
@@ -159,8 +161,32 @@ module SimInfra
         end
 
         self.add_instruction :new_var do |irstmt, operands|
-            "\tint32_t #{irstmt.oprnds[0].name} = 0;\n"
+            "\tint32_t #{irstmt.oprnds[0].name} = 0;\n
+            \tint32_t #{irstmt.oprnds[0].name}_name = -1;\n"
         end
+
+        self.add_instruction :srl do |irstmt, operands|
+            "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} >> #{irstmt.oprnds[2].name};\n"
+        end
+
+        self.add_instruction :sll do |irstmt, operands|
+            "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} << #{irstmt.oprnds[2].name};\n"
+        end
+
+        self.add_instruction :or do |irstmt, operands|
+            "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} | #{irstmt.oprnds[2].name};\n"
+        end
+
+        self.add_instruction :and do |irstmt, operands|
+            "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} & #{irstmt.oprnds[2].name};\n"
+        end
+
+        self.add_instruction :xor do |irstmt, operands|
+            "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} ^ #{irstmt.oprnds[2].name};\n"
+        end
+
+
+        # self.add_instruction
 
     end
 
@@ -223,11 +249,16 @@ module SimInfra
         decoder.write("void execute#{instr.name}(SPU& spu, uint32_t command) {\n")
         operands = getOperandsAsHashTable(instr)
         instr.code.instance_variable_get(:@tree).each do |irstmt|
+            # print irstmt.to_s + "\n"
             DecoderDSL.write_ir(decoder, irstmt, operands)
         end
 
-        print("OOOPERANDS = ", operands.to_s)
-        decoder.write("\tstd::cout << \"#{instr.name} \\t \" #{operands.keys.map{|k| ["<<" + '"' + k.to_s + '="' + "<<" + k.to_s]}.join("<< \" \t \"")} <<\":\" << std::hex << \"\t\t\" << command << std::dec << std::endl;\n")
+        decoder.write("\tstd::cout <<
+                    \"#{instr.name} \\t \"
+                    #{operands.keys.map{|k| ["<<" + '"' + k.to_s + '="' + "<<" + k.to_s + "_name"]}.join("<< std::setw(8)")}
+                    <<\":\"
+                    << std::right << std::hex <<
+                    std::setw(15) << std::setfill(' ') << command << std::dec << std::endl;\n")
         decoder.write("\tspu.pc += PC_INC;\n")
         decoder.write("}\n")
         end
@@ -241,7 +272,7 @@ end
 
 module SimInfra
 
-    def self.dump_tree(tree, filename = "tree.dot")
+    def self.dump_tree(tree, filename = "dot/tree.dot")
     File.open(filename, "w") do |f|
         f.write "digraph {\n"
         f.write "  node [shape=box];\n"
@@ -309,10 +340,10 @@ def self.dump_hash_preorder(file, value, node_id)
 end
 
     def self.build_decoding_tree(tree, instruction_map, depth=0)
-        print "----------------------------------------------------------\n"
-        print "tree = ", @tree.to_s, " map = ", instruction_map.to_s + "\n"
+        # print "----------------------------------------------------------\n"
+        # print "tree = ", @tree.to_s, " map = ", instruction_map.to_s + "\n"
         if instruction_map.size == 1
-            print "keys.first = " + instruction_map.keys.first.to_s + "\n"
+            # print "keys.first = " + instruction_map.keys.first.to_s + "\n"
             return instruction_map.keys.first
         end
         first_values = instruction_map.values.first
@@ -325,13 +356,13 @@ end
             key = values[depth]
             groups[key][name] = values
         end
-        print "groups = ", groups.to_s + "\n"
+        # print "groups = ", groups.to_s + "\n"
         for key in groups.keys
             tree[key] = Hash.new {|h, k| h[k] = {}}
             tree[key] = build_decoding_tree(tree[key], groups[key], depth+1)
         end
         return tree
-        print @tree.to_s + "\n"
+        # print @tree.to_s + "\n"
     end
 
     def self.create_decoding_tree()
@@ -339,12 +370,12 @@ end
         instruction_map = {}
         @@instructions.each do |instr|
             neededFields = instr.fields.select{|f| f.value.is_a?(Numeric)}.map{|f| {:value => f.value, :from => f.to, :to => f.from}}
-            print neededFields
+            # print neededFields
             instruction_map[instr.name] = neededFields
         end
-        print "\n"
+        # print "\n"
         build_decoding_tree(@tree, instruction_map, 0)
-        print @tree.to_s + "\n"
+        # print @tree.to_s + "\n"
         dump_tree(@tree)
         return @tree
     end
