@@ -111,7 +111,8 @@ void executeADD(SPU& spu, uint32_t command) {
 	_tmp0 = rs1 + rs2;
 	rd = _tmp0;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
-spu.pc += PC_INC;
+	std::cout << "ADD \t " <<"rd="<<rd<< " 	 "<<"rs1="<<rs1<< " 	 "<<"rs2="<<rs2 <<":" << std::hex << "		" << command << std::dec << std::endl;
+	spu.pc += PC_INC;
 }
 void executeSUB(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
@@ -123,7 +124,8 @@ void executeSUB(SPU& spu, uint32_t command) {
 	_tmp1 = rs1 - rs2;
 	rd = _tmp1;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
-spu.pc += PC_INC;
+	std::cout << "SUB \t " <<"rd="<<rd<< " 	 "<<"rs1="<<rs1<< " 	 "<<"rs2="<<rs2 <<":" << std::hex << "		" << command << std::dec << std::endl;
+	spu.pc += PC_INC;
 }
 void executeXOR(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
@@ -134,7 +136,8 @@ void executeXOR(SPU& spu, uint32_t command) {
 	int32_t _tmp2 = 0;
 	rd = _tmp2;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
-spu.pc += PC_INC;
+	std::cout << "XOR \t " <<"rd="<<rd<< " 	 "<<"rs1="<<rs1<< " 	 "<<"rs2="<<rs2 <<":" << std::hex << "		" << command << std::dec << std::endl;
+	spu.pc += PC_INC;
 }
 void executeOR(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
@@ -145,7 +148,8 @@ void executeOR(SPU& spu, uint32_t command) {
 	int32_t _tmp3 = 0;
 	rd = _tmp3;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
-spu.pc += PC_INC;
+	std::cout << "OR \t " <<"rd="<<rd<< " 	 "<<"rs1="<<rs1<< " 	 "<<"rs2="<<rs2 <<":" << std::hex << "		" << command << std::dec << std::endl;
+	spu.pc += PC_INC;
 }
 void executeAND(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
@@ -156,7 +160,8 @@ void executeAND(SPU& spu, uint32_t command) {
 	int32_t _tmp4 = 0;
 	rd = _tmp4;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
-spu.pc += PC_INC;
+	std::cout << "AND \t " <<"rd="<<rd<< " 	 "<<"rs1="<<rs1<< " 	 "<<"rs2="<<rs2 <<":" << std::hex << "		" << command << std::dec << std::endl;
+	spu.pc += PC_INC;
 }
 void executeSLL(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
@@ -167,7 +172,8 @@ void executeSLL(SPU& spu, uint32_t command) {
 	int32_t _tmp5 = 0;
 	rd = _tmp5;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
-spu.pc += PC_INC;
+	std::cout << "SLL \t " <<"rd="<<rd<< " 	 "<<"rs1="<<rs1<< " 	 "<<"rs2="<<rs2 <<":" << std::hex << "		" << command << std::dec << std::endl;
+	spu.pc += PC_INC;
 }
 void executeSRL(SPU& spu, uint32_t command) {
 	int32_t rd = 0;
@@ -178,7 +184,8 @@ void executeSRL(SPU& spu, uint32_t command) {
 	int32_t _tmp6 = 0;
 	rd = _tmp6;
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
-spu.pc += PC_INC;
+	std::cout << "SRL \t " <<"rd="<<rd<< " 	 "<<"rs1="<<rs1<< " 	 "<<"rs2="<<rs2 <<":" << std::hex << "		" << command << std::dec << std::endl;
+	spu.pc += PC_INC;
 }
 void init(std::vector<uint32_t> commands, size_t fsize) {
     struct SPU spu(fsize);
@@ -204,39 +211,32 @@ void init(std::vector<uint32_t> commands, size_t fsize) {
 				switch(field_level4) {
 				case 0:
 				{
-				std::cout << "ADD: " << std::hex << command << std::dec << std::endl;
 				executeADD(spu, command);
 				break;}
 				case 4:
 				{
-				std::cout << "XOR: " << std::hex << command << std::dec << std::endl;
 				executeXOR(spu, command);
 				break;}
 				case 6:
 				{
-				std::cout << "OR: " << std::hex << command << std::dec << std::endl;
 				executeOR(spu, command);
 				break;}
 				case 7:
 				{
-				std::cout << "AND: " << std::hex << command << std::dec << std::endl;
 				executeAND(spu, command);
 				break;}
 				case 1:
 				{
-				std::cout << "SLL: " << std::hex << command << std::dec << std::endl;
 				executeSLL(spu, command);
 				break;}
 				case 5:
 				{
-				std::cout << "SRL: " << std::hex << command << std::dec << std::endl;
 				executeSRL(spu, command);
 				break;}
 				}
 			break;}
 			case 32:
 			{
-			std::cout << "SUB: " << std::hex << command << std::dec << std::endl;
 			executeSUB(spu, command);
 			break;}
 			}

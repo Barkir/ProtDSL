@@ -108,6 +108,62 @@ end
 # Decoder
 # ==============================================
 module SimInfra
+   class DecoderDSL
+        class << self
+
+
+        def create_mask(from, to) # from < to
+            "0b" + "0" * (32 - (to - from + 1)) + "1" * (to - from + 1)
+        end
+
+            def add_instruction(name, &tmpl)
+                instructions[name.to_s] = tmpl
+            end
+
+            def instructions
+                @instructions ||= {}
+            end
+
+
+            def write_ir(decoder, irstmt, operands)
+                template = instructions[irstmt.name.to_s]
+                if template
+                    decoder.write(template.call(irstmt, operands))
+                end
+            end
+
+        end
+
+        self.add_instruction :getreg do |irstmt, operands|
+            reg_to_load = operands[irstmt.oprnds[0].to_s]
+            reg_to_get = operands[irstmt.oprnds[1].to_s]
+            "\t#{reg_to_load.name} = spu.regs[getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)})];\n"
+        end
+
+        self.add_instruction :setreg do |irstmt, operands|
+            reg_to_load = operands[irstmt.oprnds[0].to_s]
+            reg_to_get  = operands[irstmt.oprnds[1].to_s]
+            "\tspu.regs[getField(command, #{reg_to_load.to}, #{reg_to_load.from}, #{create_mask(reg_to_load.to, reg_to_load.from)})] = #{reg_to_get.name};\n"
+        end
+
+        self.add_instruction :add do |irstmt, operands|
+            "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} + #{irstmt.oprnds[2].name};\n"
+        end
+
+        self.add_instruction :sub do |irstmt, operands|
+            "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} - #{irstmt.oprnds[2].name};\n"
+        end
+
+        self.add_instruction :let do |irstmt, operands|
+            "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name};\n"
+        end
+
+        self.add_instruction :new_var do |irstmt, operands|
+            "\tint32_t #{irstmt.oprnds[0].name} = 0;\n"
+        end
+
+    end
+
     def self.write_decoder_header(decoder)
         decoder.write(REGULAR_HEADER_CODE)
         decoder.write(GET_FILE_SIZE_CODE)
@@ -129,35 +185,6 @@ module SimInfra
         return operands
     end
 
-    def self.write_ir(decoder, irstmt, operands)
-        case irstmt.name.to_s
-            when "getreg"
-                reg_to_load = operands[irstmt.oprnds[0].to_s]
-                reg_to_get = operands[irstmt.oprnds[1].to_s]
-                decoder.write("\t#{reg_to_load.name} = spu.regs[getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)})];\n")
-
-            when "setreg"
-                reg_to_load = operands[irstmt.oprnds[0].to_s]
-                reg_to_get  = operands[irstmt.oprnds[1].to_s]
-                decoder.write("\tspu.regs[getField(command, #{reg_to_load.to}, #{reg_to_load.from}, #{create_mask(reg_to_load.to, reg_to_load.from)})] = #{reg_to_get.name};\n")
-
-            when "add"
-                decoder.write("\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} + #{irstmt.oprnds[2].name};\n")
-
-            when "sub"
-                decoder.write("\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} - #{irstmt.oprnds[2].name};\n")
-
-            when "let"
-                decoder.write("\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name};\n");
-
-            when "new_var"
-                decoder.write("\tint32_t #{irstmt.oprnds[0].name} = 0;\n")
-
-            else
-                # print irstmt
-            end
-    end
-
     def self.create_main(decoder)
         decoder.write(MAIN_CODE)
     end
@@ -171,7 +198,6 @@ module SimInfra
                 if subtree[key].is_a?(Hash)
                     generate_switch(decoder, subtree[key], level + 1)
                 else
-                    decoder.write("\t" * level + "std::cout << \"#{subtree[key]}: \" << std::hex << command << std::dec << std::endl;\n")
                     decoder.write("\t" * level + "execute#{subtree[key].to_s}(spu, command);\n")
                 end
                     decoder.write("\t" * level + "break;}\n")
@@ -197,9 +223,12 @@ module SimInfra
         decoder.write("void execute#{instr.name}(SPU& spu, uint32_t command) {\n")
         operands = getOperandsAsHashTable(instr)
         instr.code.instance_variable_get(:@tree).each do |irstmt|
-            write_ir(decoder, irstmt, operands)
+            DecoderDSL.write_ir(decoder, irstmt, operands)
         end
-        decoder.write("spu.pc += PC_INC;\n")
+
+        print("OOOPERANDS = ", operands.to_s)
+        decoder.write("\tstd::cout << \"#{instr.name} \\t \" #{operands.keys.map{|k| ["<<" + '"' + k.to_s + '="' + "<<" + k.to_s]}.join("<< \" \t \"")} <<\":\" << std::hex << \"\t\t\" << command << std::dec << std::endl;\n")
+        decoder.write("\tspu.pc += PC_INC;\n")
         decoder.write("}\n")
         end
         # print @@instructions
