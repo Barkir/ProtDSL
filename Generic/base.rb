@@ -2,6 +2,8 @@
 require_relative "constants_encoder"
 require_relative "constants_decoder"
 
+# ecall, ebreak
+
 module SimInfra
     # @@instructions -array of instruction description
     # shows result of our tests in interactive Ruby (IRB) or standalone
@@ -111,7 +113,6 @@ module SimInfra
    class DecoderDSL
         class << self
 
-
         def create_mask(from, to) # from < to
             "0b" + "0" * (32 - (to - from + 1)) + "1" * (to - from + 1)
         end
@@ -139,7 +140,7 @@ module SimInfra
             reg_to_load = operands[irstmt.oprnds[0].to_s]
             reg_to_get = operands[irstmt.oprnds[1].to_s]
             "\t#{reg_to_load.name} = spu.regs[getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)})];\n
-            \t#{reg_to_load.name}_name = getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)});\n"
+            \t//#{reg_to_load.name}_name = getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)});\n"
         end
 
         self.add_instruction :setreg do |irstmt, operands|
@@ -161,8 +162,8 @@ module SimInfra
         end
 
         self.add_instruction :new_var do |irstmt, operands|
-            "\tint32_t #{irstmt.oprnds[0].name} = 0;\n
-            \tint32_t #{irstmt.oprnds[0].name}_name = -1;\n"
+            "\tuint32_t #{irstmt.oprnds[0].name} = 0;\n
+            \t //uint32_t #{irstmt.oprnds[0].name}_name = -1;\n" # uint32 TODO:
         end
 
         self.add_instruction :srl do |irstmt, operands|
@@ -217,13 +218,15 @@ module SimInfra
 
     def self.generate_switch(decoder, subtree, level)
             key = subtree.keys[0]
-            decoder.write("\t" * level + "int field_level#{level} = getField(command, #{key[:from]}, #{key[:to]}, #{create_mask(key[:from], key[:to])});\n")
+            decoder.write("\t" * level + "uint32_t field_level#{level} = getField(command, #{key[:from]}, #{key[:to]}, #{create_mask(key[:from], key[:to])});\n")
             decoder.write("\t" *  level + "switch(field_level#{level}) {\n")
+            decoder.write("\t" * level + "default: break;")
             for key in subtree.keys
                 decoder.write("\t" * level + "case #{key[:value]}:\n", "\t" * level, "{\n")
                 if subtree[key].is_a?(Hash)
                     generate_switch(decoder, subtree[key], level + 1)
                 else
+                    decoder.write("\t" * level + "//decode#{subtree[key].to_s}(spu, command);\n")
                     decoder.write("\t" * level + "execute#{subtree[key].to_s}(spu, command);\n")
                 end
                     decoder.write("\t" * level + "break;}\n")
@@ -231,44 +234,54 @@ module SimInfra
             decoder.write("\t" * level + "}\n")
     end
 
-    def self.create_init(decoder)
-        decoder.write(INIT_HEADER_CODE)
-        generate_switch(decoder, @tree, 2)
-        decoder.write("\t}\n")
-        decoder.write("}\n")
-
+    def self.create_big_switch(file)
+        # decoder.write(INIT_HEADER_CODE)
+        file.write("void inline bigSwitch(SPU& spu, uint32_t command){\n")
+        generate_switch(file, @tree, 2)
+        file.write("}\n")
     end
 
     def self.create_decoder
-        decoder = File.open("decoder.cpp", "w")
-        write_decoder_header(decoder)
+        decoders = File.open("src/decoders.hpp", "w")
+        decoders.write("#pragma once\n")
+        executers = File.open("src/executers.hpp", "w")
+        executers.write("#pragma once\n")
+
+        # write_decoder_header(decoder)
 
         create_decoding_tree()
 
         @@instructions.each do |instr|
-        decoder.write("void execute#{instr.name}(SPU& spu, uint32_t command) {\n")
+        executers.write("void inline execute#{instr.name}(SPU& spu, uint32_t command) {\n")
         operands = getOperandsAsHashTable(instr)
         instr.code.instance_variable_get(:@tree).each do |irstmt|
             # print irstmt.to_s + "\n"
-            DecoderDSL.write_ir(decoder, irstmt, operands)
+            DecoderDSL.write_ir(executers, irstmt, operands)
         end
+        executers.write("}\n")
 
-        decoder.write("\tstd::cout <<
+        decoders.write("void inline decode#{instr.name}(SPU& spu, uint32_t command) {\n")
+
+        decoders.write("\tstd::cout <<
                     \"#{instr.name} \\t \"
                     #{operands.keys.map{|k| ["<<" + '"' + k.to_s + '="' + "<<" + k.to_s + "_name"]}.join("<< std::setw(8)")}
                     <<\":\"
                     << std::right << std::hex <<
                     std::setw(15) << std::setfill(' ') << command << std::dec << std::endl;\n")
-        decoder.write("\tspu.pc += PC_INC;\n")
-        decoder.write("}\n")
+        decoders.write("}\n")
         end
         # print @@instructions
-        create_init(decoder)
-        create_main(decoder)
+        create_big_switch(executers)
+        # create_main(decoder)
     end
 end
 
+
+############################################################################
+############################################################################
 # {51 => {0 => {0 => {ADD}, 4 => {XOR}, 6 => {OR}}, 32 => {0 => {SUB}}}}
+############################################################################
+############################################################################
 
 module SimInfra
 
