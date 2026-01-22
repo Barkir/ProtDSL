@@ -1,3 +1,6 @@
+INSTRUCTION_SIZE_IN_BITS = 32
+STANDARD_BIT_BASIS_SIZE  = 2
+
 REGULAR_HEADER_CODE = <<~CODE
     #include <vector>
     #include <cstdint>

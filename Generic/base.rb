@@ -218,19 +218,20 @@ module SimInfra
 
     def self.generate_switch(decoder, subtree, level)
             key = subtree.keys[0]
-            decoder.write("\t" * level + "uint32_t field_level#{level} = getField(command, #{key[:from]}, #{key[:to]}, #{create_mask(key[:from], key[:to])});\n")
-            decoder.write("\t" *  level + "switch(field_level#{level}) {\n")
-            decoder.write("\t" * level + "default: break;")
+            name = generate_get_bits_function(decoder, key[1], key[2] + 1)
+            # decoder.write("\t" * level + "uint32_t field_level#{level} = getField(command, #{key[:from]}, #{key[:to]}, #{create_mask(key[:from], key[:to])});\n")
+            decoder.write("\t" *  level + "switch(#{name}) {\n")
             for key in subtree.keys
-                decoder.write("\t" * level + "case #{key[:value]}:\n", "\t" * level, "{\n")
+                decoder.write("\t" * level + "case #{key[0]}:\n", "\t" * level, "{\n")
                 if subtree[key].is_a?(Hash)
                     generate_switch(decoder, subtree[key], level + 1)
                 else
-                    decoder.write("\t" * level + "//decode#{subtree[key].to_s}(spu, command);\n")
-                    decoder.write("\t" * level + "execute#{subtree[key].to_s}(spu, command);\n")
+                    decoder.write("\t" * (level + 1) + "//decode#{subtree[key].to_s.tr('[', '').tr(']', '').tr(':', '')}(spu, command);\n")
+                    decoder.write("\t" * (level + 1) + "execute#{subtree[key].to_s.tr('[', '').tr(']', '').tr(':', '')}(spu, command);\n")
                 end
-                    decoder.write("\t" * level + "break;}\n")
+                    decoder.write("\t" * (level + 1) + "break;\n" + "\t" * level + "}\n")
             end
+            decoder.write("\t" * level + "default: break;\n")
             decoder.write("\t" * level + "}\n")
     end
 
@@ -247,9 +248,7 @@ module SimInfra
         executers = File.open("src/executers.hpp", "w")
         executers.write("#pragma once\n")
 
-        # write_decoder_header(decoder)
-
-        create_decoding_tree()
+        create_decoding_tree(executers)
 
         @@instructions.each do |instr|
         executers.write("void inline execute#{instr.name}(SPU& spu, uint32_t command) {\n")
@@ -352,44 +351,159 @@ def self.dump_hash_preorder(file, value, node_id)
   end
 end
 
-    def self.build_decoding_tree(tree, instruction_map, depth=0)
-        # print "----------------------------------------------------------\n"
-        # print "tree = ", @tree.to_s, " map = ", instruction_map.to_s + "\n"
-        if instruction_map.size == 1
-            # print "keys.first = " + instruction_map.keys.first.to_s + "\n"
-            return instruction_map.keys.first
-        end
-        first_values = instruction_map.values.first
-        if depth >= first_values.length
-            raise "Impossible to recognize instructions #{instruction_map.keys}"
-        end
+# score is evaluated using this formula: score = N_total - N_x - |N_0 - N_1|
+# N_total - number of instructions where we choose this bit (instruction_map.length)
 
-        groups = Hash.new {|h, k| h[k] = {} }
-        instruction_map.each do |name, values|
-            key = values[depth]
-            groups[key][name] = values
+# N_x - number of instructions where this bit is marked as     'don't care'
+# N_0 - number of instructions where this bit is equal to       0
+# N_1 - number of instructions where this bit is equal to       1
+
+    def self.getBitScore(instruction_map, nbit)
+        n_total = instruction_map.length
+        if n_total == 2
+            return instruction_map.values[0][nbit][:value] ^ instruction_map.values[1][nbit][:value]
         end
-        # print "groups = ", groups.to_s + "\n"
-        for key in groups.keys
-            tree[key] = Hash.new {|h, k| h[k] = {}}
-            tree[key] = build_decoding_tree(tree[key], groups[key], depth+1)
+        n_0 = 0
+        n_1 = 0
+        n_x = 0
+        instruction_map.each do |name, value|
+            if value[nbit][:type] == 0
+                n_x += 1
+            elsif value[nbit][:value] == 1
+                n_1 += 1
+            elsif value[nbit][:value] == 0
+                n_0 += 1
+            end
         end
-        return tree
-        # print @tree.to_s + "\n"
+        printf("total: %d, don't care: %d, 1: %d, 0: %d\n", n_total, n_x, n_1, n_0)
+        return n_total - n_x - (n_0 - n_1).abs
     end
 
-    def self.create_decoding_tree()
+    def self.get_instruction_string(map, bitBasis)
+        instructionString = []
+        index = 0
+        bitBasis.each do |value|
+            instructionString[index] = map[value[:nbit]]
+            instructionString[index][:nbit] = value[:nbit]
+            index += 1
+        end
+        # puts instructionString
+        # puts "\n"
+
+        # turn it into string
+        return instructionString.map{|item| item[:value].to_s}.join.rjust(bitBasis.length, '0')
+    end
+
+    def self.generate_get_bits_function(executers, bitBasis, depth)
+        # executers.write("int getBitsAtLevel#{depth}(uint32_t command) {\n")
+            var_name = "bits_#{depth}_#{bitBasis.map{|n| n[:nbit]}.join()}"
+            executers.write("\t" * depth + "\tint #{var_name} = 0;\n")
+            # i need to get the bits and collect them into single number
+            # 1. get the value of n'th bit. this can be done by masking it
+            # 2. set this bit as the 0, 1, 2 bit in the 'bits' value
+
+            bitBasis.each_with_index do |value, n|
+                printf("basis: %d <<< index: %d\n", value[:nbit], n)
+                mask = ("1" + "0" * (value[:nbit] - 1)).rjust(32, '0')
+                print("mask = " + mask + "\n")
+                executers.write("\t" * depth + "\t#{var_name} += (command & #{mask}) >> #{value[:nbit] - n};\n")
+            end
+            # executers.write("\treturn bits;\n")
+        # executers.write("}\n")
+        return var_name
+    end
+
+    def self.build_decoding_tree(executers, tree, instruction_map, depth=0)
+        printf(":: building a decoding tree at depth %d | %s \n", depth, instruction_map.keys)
+        if instruction_map.size == 1
+            return instruction_map.keys
+        end
+
+        bitRange = Array.new(32) do
+            {score: 0, nbit: 0}
+        end
+
+        (0..31).each do |i|
+            score = getBitScore(instruction_map, i)
+            bitRange[i][:score] = score
+            bitRange[i][:nbit] = i
+        end
+        instruction_map.each do |name, value|
+            value_clean = value.map {|n| n[:value]}
+            print value_clean.join("")
+            print "\n"
+        end
+        printf(":: got bitRange %s \n", bitRange.to_s)
+        bitBasis = bitRange.select{|item| item[:score] != 0}.sort_by{|item| -item[:score]}.first(STANDARD_BIT_BASIS_SIZE)
+        printf(":: got bitBasis %s at length %d\n", bitBasis.to_s, depth)
+        # generate_get_bits_function(executers, bitBasis, depth)
+        # iterating from 0 to 1111 (in case if we choose 4 bits as a basis)
+        (0..2**bitBasis.length).each do |i|
+
+            # making a string:  e.g. '0101'
+            bitString = i.to_s(2).rjust(bitBasis.length, '0')
+            sub_instruction_map = {}
+
+            # iterating over instructions to check if bits are equal
+            # to bitString and add them to sub_instruction_map
+            # then calling build_decoding_tree recursively
+            instruction_map.each do |name, map|
+                instructionString = get_instruction_string(map, bitBasis)
+                printf("%s <><><> %s, %d\n", instructionString, bitString, instructionString == bitString ? 1 : 0)
+                if instructionString == bitString
+                    sub_instruction_map[name] = map
+                end
+            end
+            print("\n")
+            if sub_instruction_map.length > 0
+                tree[[bitString.to_i(2), bitBasis, depth]] = Hash.new {|h, k| h[k] = {}}
+                tree[[bitString.to_i(2), bitBasis, depth]] = build_decoding_tree(executers, tree[[bitString.to_i(2), bitBasis, depth]], sub_instruction_map, depth+1)
+            end
+        end
+        return tree
+    end
+
+    def self.set_bits(number, value, to, from)
+    width = to - from + 1
+    mask = ((1 << width) - 1) << from
+    (number & ~mask) | ((value & ((1 << width) - 1)) << from)
+    end
+
+    def self.buildValue(fields)
+    bitValue = Array.new(INSTRUCTION_SIZE_IN_BITS) do
+        {type: 0, value: 0}
+    end
+    fields.each do |field|
+
+        strVal = field[:value].to_s(2).rjust(field[:to] - field[:from] + 1, '0')
+        index = 0
+        (field[:from]...field[:to] + 1).each do |i|
+            bitValue[i][:value] = strVal[index].to_i
+            bitValue[i][:type] = 1
+            index += 1
+        end
+    end
+    # printf("%b\n", retVal)
+    return bitValue
+    end
+
+    def self.create_decoding_tree(executers)
         @tree = Hash.new {|h, k| h[k] = {}}
         instruction_map = {}
         @@instructions.each do |instr|
             neededFields = instr.fields.select{|f| f.value.is_a?(Numeric)}.map{|f| {:value => f.value, :from => f.to, :to => f.from}}
-            # print neededFields
-            instruction_map[instr.name] = neededFields
+            fullValues = []
+            printf "building value for %s instruction\n", instr.name
+            value = buildValue(neededFields)
+            instruction_map[instr.name] = value
         end
+
+        # print instruction_map
         # print "\n"
-        build_decoding_tree(@tree, instruction_map, 0)
-        # print @tree.to_s + "\n"
+        build_decoding_tree(executers, @tree, instruction_map, 0)
+        print @tree.to_s + "\n"
         dump_tree(@tree)
         return @tree
     end
 end
+

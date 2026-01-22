@@ -161,54 +161,79 @@ void inline executeSRL(SPU& spu, uint32_t command) {
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
 }
 void inline bigSwitch(SPU& spu, uint32_t command){
-		uint32_t field_level2 = getField(command, 0, 6, 0b00000000000000000000000001111111);
-		switch(field_level2) {
-		default: break;		case 51:
+		int bits_1_1214 = 0;
+		bits_1_1214 += (command & 00000000000000000000100000000000) >> 12;
+		bits_1_1214 += (command & 00000000000000000010000000000000) >> 13;
+		switch(bits_1_1214) {
+		case 0:
 		{
-			uint32_t field_level3 = getField(command, 25, 31, 0b00000000000000000000000001111111);
-			switch(field_level3) {
-			default: break;			case 0:
+			int bits_2_26 = 0;
+			bits_2_26 += (command & 00000010000000000000000000000000) >> 26;
+			switch(bits_2_26) {
+			case 0:
 			{
-				uint32_t field_level4 = getField(command, 12, 14, 0b00000000000000000000000000000111);
-				switch(field_level4) {
-				default: break;				case 0:
-				{
 				//decodeADD(spu, command);
 				executeADD(spu, command);
-				break;}
-				case 4:
-				{
+				break;
+			}
+			case 1:
+			{
+				//decodeSUB(spu, command);
+				executeSUB(spu, command);
+				break;
+			}
+			default: break;
+			}
+			break;
+		}
+		case 1:
+		{
+			//decodeSLL(spu, command);
+			executeSLL(spu, command);
+			break;
+		}
+		case 2:
+		{
+			int bits_2_13 = 0;
+			bits_2_13 += (command & 00000000000000000001000000000000) >> 13;
+			switch(bits_2_13) {
+			case 0:
+			{
 				//decodeXOR(spu, command);
 				executeXOR(spu, command);
-				break;}
-				case 6:
-				{
+				break;
+			}
+			case 1:
+			{
 				//decodeOR(spu, command);
 				executeOR(spu, command);
-				break;}
-				case 7:
-				{
-				//decodeAND(spu, command);
-				executeAND(spu, command);
-				break;}
-				case 1:
-				{
-				//decodeSLL(spu, command);
-				executeSLL(spu, command);
-				break;}
-				case 5:
-				{
+				break;
+			}
+			default: break;
+			}
+			break;
+		}
+		case 3:
+		{
+			int bits_2_13 = 0;
+			bits_2_13 += (command & 00000000000000000001000000000000) >> 13;
+			switch(bits_2_13) {
+			case 0:
+			{
 				//decodeSRL(spu, command);
 				executeSRL(spu, command);
-				break;}
-				}
-			break;}
-			case 32:
-			{
-			//decodeSUB(spu, command);
-			executeSUB(spu, command);
-			break;}
+				break;
 			}
-		break;}
+			case 1:
+			{
+				//decodeAND(spu, command);
+				executeAND(spu, command);
+				break;
+			}
+			default: break;
+			}
+			break;
+		}
+		default: break;
 		}
 }

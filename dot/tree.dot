@@ -1,21 +1,21 @@
 digraph {
   node [shape=box];
-  root [label="root\nKeys:\n{value: 51, from: 0, to: 6}"];
-  root -> root_key0 [label="{value: 51, from: 0, to: 6}"];
-  root_key0_0 [label="{value: 0, from: 25, to: 31}"];
+  root [label="root\nKeys:\n[0, [{score: 6, nbit: 12}, {score: 6, nbit: 14}], 0]\n[1, [{score: 6, nbit: 12}, {score: 6, nbit: 14}], 0]\n[2, [{score: 6, nbit: 12}, {score: 6, nbit: 14}], 0]\n[3, [{score: 6, nbit: 12}, {score: 6, nbit: 14}], 0]"];
+  root -> root_key0 [label="[0, [{score: 6, nbit: 12}, {score: 6, nbit: 14}], 0]"];
+  root_key0_0 [label="[0, [{score: 1, nbit: 26}], 1] = [:ADD]", shape=ellipse];
   root_key0 -> root_key0_0;
-  root_key0_0_0 [label="{value: 0, from: 12, to: 14} = :ADD", shape=ellipse];
-  root_key0_0 -> root_key0_0_0;
-  root_key0_0_1 [label="{value: 4, from: 12, to: 14} = :XOR", shape=ellipse];
-  root_key0_0 -> root_key0_0_1;
-  root_key0_0_2 [label="{value: 6, from: 12, to: 14} = :OR", shape=ellipse];
-  root_key0_0 -> root_key0_0_2;
-  root_key0_0_3 [label="{value: 7, from: 12, to: 14} = :AND", shape=ellipse];
-  root_key0_0 -> root_key0_0_3;
-  root_key0_0_4 [label="{value: 1, from: 12, to: 14} = :SLL", shape=ellipse];
-  root_key0_0 -> root_key0_0_4;
-  root_key0_0_5 [label="{value: 5, from: 12, to: 14} = :SRL", shape=ellipse];
-  root_key0_0 -> root_key0_0_5;
-  root_key0_1 [label="{value: 32, from: 25, to: 31} = :SUB", shape=ellipse];
+  root_key0_1 [label="[1, [{score: 1, nbit: 26}], 1] = [:SUB]", shape=ellipse];
   root_key0 -> root_key0_1;
+  root -> root_key1 [label="[1, [{score: 6, nbit: 12}, {score: 6, nbit: 14}], 0]"];
+  root_key1 [label="[:SLL]", shape=ellipse];
+  root -> root_key2 [label="[2, [{score: 6, nbit: 12}, {score: 6, nbit: 14}], 0]"];
+  root_key2_0 [label="[0, [{score: 1, nbit: 13}], 1] = [:XOR]", shape=ellipse];
+  root_key2 -> root_key2_0;
+  root_key2_1 [label="[1, [{score: 1, nbit: 13}], 1] = [:OR]", shape=ellipse];
+  root_key2 -> root_key2_1;
+  root -> root_key3 [label="[3, [{score: 6, nbit: 12}, {score: 6, nbit: 14}], 0]"];
+  root_key3_0 [label="[0, [{score: 1, nbit: 13}], 1] = [:SRL]", shape=ellipse];
+  root_key3 -> root_key3_0;
+  root_key3_1 [label="[1, [{score: 1, nbit: 13}], 1] = [:AND]", shape=ellipse];
+  root_key3 -> root_key3_1;
 }
