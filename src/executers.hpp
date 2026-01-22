@@ -161,25 +161,45 @@ void inline executeSRL(SPU& spu, uint32_t command) {
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
 }
 void inline bigSwitch(SPU& spu, uint32_t command){
-		int bits_1_1214 = 0;
-		bits_1_1214 += (command & 00000000000000000000100000000000) >> 12;
-		bits_1_1214 += (command & 00000000000000000010000000000000) >> 13;
-		switch(bits_1_1214) {
+		int bits_1_12 = 0;
+		int bitMask = 0;
+	bitMask = (command & 0b00000000000000000001000000000000) >> 13;
+		bits_1_12 += bitMask;
+		switch(bits_1_12) {
 		case 0:
 		{
-			int bits_2_26 = 0;
-			bits_2_26 += (command & 00000010000000000000000000000000) >> 26;
-			switch(bits_2_26) {
+			int bits_2_14 = 0;
+			int bitMask = 0;
+		bitMask = (command & 0b00000000000000000100000000000000) >> 15;
+			bits_2_14 += bitMask;
+			switch(bits_2_14) {
 			case 0:
 			{
-				//decodeADD(spu, command);
-				executeADD(spu, command);
+				int bits_3_26 = 0;
+				int bitMask = 0;
+			bitMask = (command & 0b00000100000000000000000000000000) >> 27;
+				bits_3_26 += bitMask;
+				switch(bits_3_26) {
+				case 0:
+				{
+					decodeADD(spu, command);
+					executeADD(spu, command);
+					break;
+				}
+				case 1:
+				{
+					decodeSUB(spu, command);
+					executeSUB(spu, command);
+					break;
+				}
+				default: break;
+				}
 				break;
 			}
 			case 1:
 			{
-				//decodeSUB(spu, command);
-				executeSUB(spu, command);
+				decodeSLL(spu, command);
+				executeSLL(spu, command);
 				break;
 			}
 			default: break;
@@ -188,46 +208,55 @@ void inline bigSwitch(SPU& spu, uint32_t command){
 		}
 		case 1:
 		{
-			//decodeSLL(spu, command);
-			executeSLL(spu, command);
-			break;
-		}
-		case 2:
-		{
 			int bits_2_13 = 0;
-			bits_2_13 += (command & 00000000000000000001000000000000) >> 13;
+			int bitMask = 0;
+		bitMask = (command & 0b00000000000000000010000000000000) >> 14;
+			bits_2_13 += bitMask;
 			switch(bits_2_13) {
 			case 0:
 			{
-				//decodeXOR(spu, command);
-				executeXOR(spu, command);
+				int bits_3_14 = 0;
+				int bitMask = 0;
+			bitMask = (command & 0b00000000000000000100000000000000) >> 15;
+				bits_3_14 += bitMask;
+				switch(bits_3_14) {
+				case 0:
+				{
+					decodeXOR(spu, command);
+					executeXOR(spu, command);
+					break;
+				}
+				case 1:
+				{
+					decodeSRL(spu, command);
+					executeSRL(spu, command);
+					break;
+				}
+				default: break;
+				}
 				break;
 			}
 			case 1:
 			{
-				//decodeOR(spu, command);
-				executeOR(spu, command);
-				break;
-			}
-			default: break;
-			}
-			break;
-		}
-		case 3:
-		{
-			int bits_2_13 = 0;
-			bits_2_13 += (command & 00000000000000000001000000000000) >> 13;
-			switch(bits_2_13) {
-			case 0:
-			{
-				//decodeSRL(spu, command);
-				executeSRL(spu, command);
-				break;
-			}
-			case 1:
-			{
-				//decodeAND(spu, command);
-				executeAND(spu, command);
+				int bits_3_14 = 0;
+				int bitMask = 0;
+			bitMask = (command & 0b00000000000000000100000000000000) >> 15;
+				bits_3_14 += bitMask;
+				switch(bits_3_14) {
+				case 0:
+				{
+					decodeOR(spu, command);
+					executeOR(spu, command);
+					break;
+				}
+				case 1:
+				{
+					decodeAND(spu, command);
+					executeAND(spu, command);
+					break;
+				}
+				default: break;
+				}
 				break;
 			}
 			default: break;

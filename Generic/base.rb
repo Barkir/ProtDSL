@@ -163,7 +163,7 @@ module SimInfra
 
         self.add_instruction :new_var do |irstmt, operands|
             "\tuint32_t #{irstmt.oprnds[0].name} = 0;\n
-            \t //uint32_t #{irstmt.oprnds[0].name}_name = -1;\n" # uint32 TODO:
+            \t //uint32_t #{irstmt.oprnds[0].name}_name = -1;\n"
         end
 
         self.add_instruction :srl do |irstmt, operands|
@@ -216,23 +216,24 @@ module SimInfra
         decoder.write(MAIN_CODE)
     end
 
-    def self.generate_switch(decoder, subtree, level)
+    def self.generate_switch(executer, subtree, level)
             key = subtree.keys[0]
-            name = generate_get_bits_function(decoder, key[1], key[2] + 1)
-            # decoder.write("\t" * level + "uint32_t field_level#{level} = getField(command, #{key[:from]}, #{key[:to]}, #{create_mask(key[:from], key[:to])});\n")
-            decoder.write("\t" *  level + "switch(#{name}) {\n")
+            name = generate_get_bits_function(executer, key[1], key[2] + 1)
+            # executer.write("\t" * level + "std::cout << \"#{name} = \" << #{name} << std::endl;" + "\n")
+            # executer.write("\t" * level + "std::cout << std::bitset<32>(#{name}) << std::endl;" + "\n")
+            executer.write("\t" * level + "switch(#{name}) {\n")
             for key in subtree.keys
-                decoder.write("\t" * level + "case #{key[0]}:\n", "\t" * level, "{\n")
+                executer.write("\t" * level + "case #{key[0]}:\n", "\t" * level, "{\n")
                 if subtree[key].is_a?(Hash)
-                    generate_switch(decoder, subtree[key], level + 1)
+                    generate_switch(executer, subtree[key], level + 1)
                 else
-                    decoder.write("\t" * (level + 1) + "//decode#{subtree[key].to_s.tr('[', '').tr(']', '').tr(':', '')}(spu, command);\n")
-                    decoder.write("\t" * (level + 1) + "execute#{subtree[key].to_s.tr('[', '').tr(']', '').tr(':', '')}(spu, command);\n")
+                    executer.write("\t" * (level + 1) + "decode#{subtree[key].to_s.tr('[', '').tr(']', '').tr(':', '')}(spu, command);\n")
+                    executer.write("\t" * (level + 1) + "execute#{subtree[key].to_s.tr('[', '').tr(']', '').tr(':', '')}(spu, command);\n")
                 end
-                    decoder.write("\t" * (level + 1) + "break;\n" + "\t" * level + "}\n")
+                    executer.write("\t" * (level + 1) + "break;\n" + "\t" * level + "}\n")
             end
-            decoder.write("\t" * level + "default: break;\n")
-            decoder.write("\t" * level + "}\n")
+            executer.write("\t" * level + "default: break;\n")
+            executer.write("\t" * level + "}\n")
     end
 
     def self.create_big_switch(file)
@@ -260,14 +261,17 @@ module SimInfra
         executers.write("}\n")
 
         decoders.write("void inline decode#{instr.name}(SPU& spu, uint32_t command) {\n")
+        decoders.write("\tstd::cout << \"#{instr.name} \" << std::endl;\n")
+        decoders.write("}\n");
 
-        decoders.write("\tstd::cout <<
-                    \"#{instr.name} \\t \"
+
+        # decoders.write("\tstd::cout <<
+                    # \"#{instr.name} \\t \"
                     #{operands.keys.map{|k| ["<<" + '"' + k.to_s + '="' + "<<" + k.to_s + "_name"]}.join("<< std::setw(8)")}
-                    <<\":\"
-                    << std::right << std::hex <<
-                    std::setw(15) << std::setfill(' ') << command << std::dec << std::endl;\n")
-        decoders.write("}\n")
+                    # <<\":\"
+                    # << std::right << std::hex <<
+                    # std::setw(15) << std::setfill(' ') << command << std::dec << std::endl;\n")
+        # decoders.write("}\n")
         end
         # print @@instructions
         create_big_switch(executers)
@@ -398,15 +402,32 @@ end
         # executers.write("int getBitsAtLevel#{depth}(uint32_t command) {\n")
             var_name = "bits_#{depth}_#{bitBasis.map{|n| n[:nbit]}.join()}"
             executers.write("\t" * depth + "\tint #{var_name} = 0;\n")
+            executers.write("\t" * depth + "\tint bitMask = 0;\n")
             # i need to get the bits and collect them into single number
             # 1. get the value of n'th bit. this can be done by masking it
             # 2. set this bit as the 0, 1, 2 bit in the 'bits' value
 
             bitBasis.each_with_index do |value, n|
                 printf("basis: %d <<< index: %d\n", value[:nbit], n)
-                mask = ("1" + "0" * (value[:nbit] - 1)).rjust(32, '0')
+                mask = ("1" + "0" * (value[:nbit])).rjust(32, '0')
                 print("mask = " + mask + "\n")
-                executers.write("\t" * depth + "\t#{var_name} += (command & #{mask}) >> #{value[:nbit] - n};\n")
+                executers.write("\t" * depth + "bitMask = (command & 0b#{mask}) >> #{value[:nbit] - n - (STANDARD_BIT_BASIS_SIZE - 2)};\n")
+
+                # executers.write("\t" * depth + "std::cout << std::bitset<32>(command) << \"\t&\"<< std::endl;\n")
+                # executers.write("\t" * depth + "std::cout << std::bitset<32>(0b#{mask}) << std::endl;\n")
+                # executers.write("\t" * depth + "std::cout << \"\t\t=\" << std::endl;\n")
+                # executers.write("\t" * depth + "std::cout << bitMask << std::endl;\n")
+
+                # executers.write("\t" * depth + "std::cout << std::bitset<32>(#{var_name}) << std::endl;\n")
+                # executers.write("\t" * depth + "std::cout << \"\t\t+\" << std::endl;\n")
+                # executers.write("\t" * depth + "std::cout << std::bitset<32>(bitMask) << std::endl;\n")
+                # executers.write("\t" * depth + "std::cout << \"\t\t=\" << std::endl;\n")
+
+                executers.write("\t" * depth + "\t#{var_name} += bitMask;\n")
+
+                # executers.write("\t" * depth + "std::cout << #{var_name} << std::endl;")
+
+                # executers.write("\t" * depth + "std::cout << \"bit#{value[:nbit]}, offset#{value[:nbit] - n - 1} : \" << \tstd::bitset<32>(#{var_name})" + " << std::endl;\n")
             end
             # executers.write("\treturn bits;\n")
         # executers.write("}\n")

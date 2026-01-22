@@ -5,9 +5,10 @@
 #include <iostream>
 #include <cstring>
 #include <iomanip>
+#include <bitset>
 
 #include "main.hpp"
-// #include "decoders.hpp"
+#include "decoders.hpp"
 #include "executers.hpp"
 
 int get_commands(std::vector<uint32_t> *commands, const std::string& filename, size_t *fsz) {
@@ -70,6 +71,7 @@ void init(std::vector<uint32_t> commands, size_t fsize) {
     while (spu.pc < cm_sz) {
 
         auto command = getCommand(commands_1byte, spu.pc);
+        // std::cout << "command = \n" << std::bitset<32>(command) << std::endl;
         bigSwitch(spu, command);
         spu.pc += PC_INC;
 	}

@@ -14,7 +14,7 @@ set(SOURCES
 
 set(HEADERS
     main.hpp
-    # decoders.hpp
+    decoders.hpp
     executers.hpp
 )
 
