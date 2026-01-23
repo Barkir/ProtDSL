@@ -11,6 +11,17 @@
 #include "decoders.hpp"
 #include "executers.hpp"
 
+uint32_t flipMask(uint32_t bitmask, int numBits)
+{
+    uint32_t flippedMask = 0;
+    for(unsigned int bit = 0; bit < numBits; ++bit)
+    {
+        uint32_t currentBit = (bitmask & (1 << bit)) >> bit;
+        flippedMask |= currentBit << ((numBits - 1) - bit);
+    }
+    return flippedMask;
+}
+
 int get_commands(std::vector<uint32_t> *commands, const std::string& filename, size_t *fsz) {
     std::ifstream file(filename, std::ios::binary);
 

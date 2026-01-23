@@ -1,4 +1,5 @@
 require_relative "base"
+require_relative "Decoder/constants_decoder.rb"
 
 module SimInfra
     IrStmt = Struct.new(:name, :oprnds, :attrs)
@@ -28,12 +29,16 @@ module SimInfra
     end
     #
     class Var
-        def+(other); @scope.add(self, other); end
-        def-(other); @scope.sub(self, other); end
-        def ^(other); @scope.xor(self, other); end
-        def |(other); @scope.or(self, other); end
-        def &(other); @scope.and(self, other); end
-        def <<(other); @scope.sll(self, other); end
-        def >>(other); @scope.srl(self, other); end
+        R_TYPE.each do |op|
+            define_method(op) do |other|
+                @scope.send(op, self, other)
+            end
+        end
+
+        I_TYPE.each do |op|
+            define_method(op) do |other|
+                @scope.send(op, self, other)
+            end
+        end
     end
 end

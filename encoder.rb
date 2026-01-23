@@ -75,16 +75,22 @@ def skip_if_collect(&block)
 end
 # <><><><><><><><><><><><><><><><><><><><><><><>
 # ==============================================
-# ADD functions block
+# add functions block
 # ==============================================
-def ADD(rd, rs1, rs2)
+def add(rd, rs1, rs2)
 	skip_if_collect do
-	write_command(translateADD([rd, rs1, rs2, 51, 0, 0]))
+		write_command(translateadd([
+			rd,
+			rs1,
+			rs2,
+			51,
+			0,
+			0,
+		]))
 	end
 end
 
-
-def translateADD(operands)
+def translateadd(operands)
 	command = 0
 	rd=operands[0]
 	command = set_bits(command, rd, 11, 7)
@@ -104,16 +110,22 @@ end
 
 # ==============================================
 # ==============================================
-# SUB functions block
+# sub functions block
 # ==============================================
-def SUB(rd, rs1, rs2)
+def sub(rd, rs1, rs2)
 	skip_if_collect do
-	write_command(translateSUB([rd, rs1, rs2, 51, 32, 0]))
+		write_command(translatesub([
+			rd,
+			rs1,
+			rs2,
+			51,
+			32,
+			0,
+		]))
 	end
 end
 
-
-def translateSUB(operands)
+def translatesub(operands)
 	command = 0
 	rd=operands[0]
 	command = set_bits(command, rd, 11, 7)
@@ -133,16 +145,22 @@ end
 
 # ==============================================
 # ==============================================
-# XOR functions block
+# xor functions block
 # ==============================================
-def XOR(rd, rs1, rs2)
+def xor(rd, rs1, rs2)
 	skip_if_collect do
-	write_command(translateXOR([rd, rs1, rs2, 51, 0, 4]))
+		write_command(translatexor([
+			rd,
+			rs1,
+			rs2,
+			51,
+			0,
+			4,
+		]))
 	end
 end
 
-
-def translateXOR(operands)
+def translatexor(operands)
 	command = 0
 	rd=operands[0]
 	command = set_bits(command, rd, 11, 7)
@@ -162,16 +180,22 @@ end
 
 # ==============================================
 # ==============================================
-# OR functions block
+# or functions block
 # ==============================================
-def OR(rd, rs1, rs2)
+def or(rd, rs1, rs2)
 	skip_if_collect do
-	write_command(translateOR([rd, rs1, rs2, 51, 0, 6]))
+		write_command(translateor([
+			rd,
+			rs1,
+			rs2,
+			51,
+			0,
+			6,
+		]))
 	end
 end
 
-
-def translateOR(operands)
+def translateor(operands)
 	command = 0
 	rd=operands[0]
 	command = set_bits(command, rd, 11, 7)
@@ -191,16 +215,22 @@ end
 
 # ==============================================
 # ==============================================
-# AND functions block
+# and functions block
 # ==============================================
-def AND(rd, rs1, rs2)
+def and(rd, rs1, rs2)
 	skip_if_collect do
-	write_command(translateAND([rd, rs1, rs2, 51, 0, 7]))
+		write_command(translateand([
+			rd,
+			rs1,
+			rs2,
+			51,
+			0,
+			7,
+		]))
 	end
 end
 
-
-def translateAND(operands)
+def translateand(operands)
 	command = 0
 	rd=operands[0]
 	command = set_bits(command, rd, 11, 7)
@@ -220,16 +250,22 @@ end
 
 # ==============================================
 # ==============================================
-# SLL functions block
+# sll functions block
 # ==============================================
-def SLL(rd, rs1, rs2)
+def sll(rd, rs1, rs2)
 	skip_if_collect do
-	write_command(translateSLL([rd, rs1, rs2, 51, 0, 1]))
+		write_command(translatesll([
+			rd,
+			rs1,
+			rs2,
+			51,
+			0,
+			1,
+		]))
 	end
 end
 
-
-def translateSLL(operands)
+def translatesll(operands)
 	command = 0
 	rd=operands[0]
 	command = set_bits(command, rd, 11, 7)
@@ -249,16 +285,22 @@ end
 
 # ==============================================
 # ==============================================
-# SRL functions block
+# srl functions block
 # ==============================================
-def SRL(rd, rs1, rs2)
+def srl(rd, rs1, rs2)
 	skip_if_collect do
-	write_command(translateSRL([rd, rs1, rs2, 51, 0, 5]))
+		write_command(translatesrl([
+			rd,
+			rs1,
+			rs2,
+			51,
+			0,
+			5,
+		]))
 	end
 end
 
-
-def translateSRL(operands)
+def translatesrl(operands)
 	command = 0
 	rd=operands[0]
 	command = set_bits(command, rd, 11, 7)
@@ -271,6 +313,332 @@ def translateSRL(operands)
 	funct7=operands[4]
 	command = set_bits(command, funct7, 31, 25)
 	funct3=operands[5]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# slt functions block
+# ==============================================
+def slt(rd, rs1, rs2)
+	skip_if_collect do
+		write_command(translateslt([
+			rd,
+			rs1,
+			rs2,
+			51,
+			0,
+			2,
+		]))
+	end
+end
+
+def translateslt(operands)
+	command = 0
+	rd=operands[0]
+	command = set_bits(command, rd, 11, 7)
+	rs1=operands[1]
+	command = set_bits(command, rs1, 19, 15)
+	rs2=operands[2]
+	command = set_bits(command, rs2, 24, 20)
+	opcode=operands[3]
+	command = set_bits(command, opcode, 6, 0)
+	funct7=operands[4]
+	command = set_bits(command, funct7, 31, 25)
+	funct3=operands[5]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# sltu functions block
+# ==============================================
+def sltu(rd, rs1, rs2)
+	skip_if_collect do
+		write_command(translatesltu([
+			rd,
+			rs1,
+			rs2,
+			51,
+			0,
+			3,
+		]))
+	end
+end
+
+def translatesltu(operands)
+	command = 0
+	rd=operands[0]
+	command = set_bits(command, rd, 11, 7)
+	rs1=operands[1]
+	command = set_bits(command, rs1, 19, 15)
+	rs2=operands[2]
+	command = set_bits(command, rs2, 24, 20)
+	opcode=operands[3]
+	command = set_bits(command, opcode, 6, 0)
+	funct7=operands[4]
+	command = set_bits(command, funct7, 31, 25)
+	funct3=operands[5]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# addi functions block
+# ==============================================
+def addi(rd, rs1, imm)
+	skip_if_collect do
+		write_command(translateaddi([
+			rd,
+			rs1,
+			19,
+			imm,
+			0,
+		]))
+	end
+end
+
+def translateaddi(operands)
+	command = 0
+	rd=operands[0]
+	command = set_bits(command, rd, 11, 7)
+	rs1=operands[1]
+	command = set_bits(command, rs1, 19, 15)
+	opcode=operands[2]
+	command = set_bits(command, opcode, 6, 0)
+	imm=operands[3]
+	command = set_bits(command, imm, 31, 20)
+	funct3=operands[4]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# andi functions block
+# ==============================================
+def andi(rd, rs1, imm)
+	skip_if_collect do
+		write_command(translateandi([
+			rd,
+			rs1,
+			19,
+			imm,
+			7,
+		]))
+	end
+end
+
+def translateandi(operands)
+	command = 0
+	rd=operands[0]
+	command = set_bits(command, rd, 11, 7)
+	rs1=operands[1]
+	command = set_bits(command, rs1, 19, 15)
+	opcode=operands[2]
+	command = set_bits(command, opcode, 6, 0)
+	imm=operands[3]
+	command = set_bits(command, imm, 31, 20)
+	funct3=operands[4]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# xori functions block
+# ==============================================
+def xori(rd, rs1, imm)
+	skip_if_collect do
+		write_command(translatexori([
+			rd,
+			rs1,
+			19,
+			imm,
+			4,
+		]))
+	end
+end
+
+def translatexori(operands)
+	command = 0
+	rd=operands[0]
+	command = set_bits(command, rd, 11, 7)
+	rs1=operands[1]
+	command = set_bits(command, rs1, 19, 15)
+	opcode=operands[2]
+	command = set_bits(command, opcode, 6, 0)
+	imm=operands[3]
+	command = set_bits(command, imm, 31, 20)
+	funct3=operands[4]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# ori functions block
+# ==============================================
+def ori(rd, rs1, imm)
+	skip_if_collect do
+		write_command(translateori([
+			rd,
+			rs1,
+			19,
+			imm,
+			6,
+		]))
+	end
+end
+
+def translateori(operands)
+	command = 0
+	rd=operands[0]
+	command = set_bits(command, rd, 11, 7)
+	rs1=operands[1]
+	command = set_bits(command, rs1, 19, 15)
+	opcode=operands[2]
+	command = set_bits(command, opcode, 6, 0)
+	imm=operands[3]
+	command = set_bits(command, imm, 31, 20)
+	funct3=operands[4]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# slli functions block
+# ==============================================
+def slli(rd, rs1, imm)
+	skip_if_collect do
+		write_command(translateslli([
+			rd,
+			rs1,
+			19,
+			imm,
+			1,
+		]))
+	end
+end
+
+def translateslli(operands)
+	command = 0
+	rd=operands[0]
+	command = set_bits(command, rd, 11, 7)
+	rs1=operands[1]
+	command = set_bits(command, rs1, 19, 15)
+	opcode=operands[2]
+	command = set_bits(command, opcode, 6, 0)
+	imm=operands[3]
+	command = set_bits(command, imm, 31, 20)
+	funct3=operands[4]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# srli functions block
+# ==============================================
+def srli(rd, rs1, imm)
+	skip_if_collect do
+		write_command(translatesrli([
+			rd,
+			rs1,
+			19,
+			imm,
+			5,
+		]))
+	end
+end
+
+def translatesrli(operands)
+	command = 0
+	rd=operands[0]
+	command = set_bits(command, rd, 11, 7)
+	rs1=operands[1]
+	command = set_bits(command, rs1, 19, 15)
+	opcode=operands[2]
+	command = set_bits(command, opcode, 6, 0)
+	imm=operands[3]
+	command = set_bits(command, imm, 31, 20)
+	funct3=operands[4]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# slti functions block
+# ==============================================
+def slti(rd, rs1, imm)
+	skip_if_collect do
+		write_command(translateslti([
+			rd,
+			rs1,
+			19,
+			imm,
+			2,
+		]))
+	end
+end
+
+def translateslti(operands)
+	command = 0
+	rd=operands[0]
+	command = set_bits(command, rd, 11, 7)
+	rs1=operands[1]
+	command = set_bits(command, rs1, 19, 15)
+	opcode=operands[2]
+	command = set_bits(command, opcode, 6, 0)
+	imm=operands[3]
+	command = set_bits(command, imm, 31, 20)
+	funct3=operands[4]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# sltiu functions block
+# ==============================================
+def sltiu(rd, rs1, imm)
+	skip_if_collect do
+		write_command(translatesltiu([
+			rd,
+			rs1,
+			19,
+			imm,
+			3,
+		]))
+	end
+end
+
+def translatesltiu(operands)
+	command = 0
+	rd=operands[0]
+	command = set_bits(command, rd, 11, 7)
+	rs1=operands[1]
+	command = set_bits(command, rs1, 19, 15)
+	opcode=operands[2]
+	command = set_bits(command, opcode, 6, 0)
+	imm=operands[3]
+	command = set_bits(command, imm, 31, 20)
+	funct3=operands[4]
 	command = set_bits(command, funct3, 14, 12)
 	return command
 end

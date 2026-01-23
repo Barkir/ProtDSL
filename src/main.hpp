@@ -5,6 +5,7 @@ uint32_t getCommand(const std::vector<uint8_t> commands, size_t pc);
 int get_commands(std::vector<uint32_t> *commands, const std::string& filename, size_t *fsz);
 size_t getFileSize(std::ifstream& file);
 void init(std::vector<uint32_t> commands, size_t fsize);
+uint32_t flipMask(uint32_t bitmask, int numBits);
 
 const size_t COMMAND_SIZE = 4;
 const size_t DEFAULT_MEMORY_SIZE = 1024;

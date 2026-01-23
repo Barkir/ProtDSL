@@ -192,6 +192,40 @@ Generated switch example
 
 4. There also some details like `incrementing pc`, or `writing logs`, but basically that's all about making a decoder generator.
 
+### Decoder architecture redefining
+- it is not really convenient to define all new methods in individual files, like `binOp` or `Var methods`
+- so we can use metaprogramming instead and define names of instructions like this
+```
+BIN_OPS = %i[add sub xor]
+```
+where `%i` means that we use symbols. basically it is the same as we write.
+
+```
+BIN_OPS = [:add, :sub, :xor]
+```
+
+and then we use `define_method` like this:
+```ruby
+BIN_OPS.each do |op|
+            define_method(op) do |other|
+                @scope.send(op, self, other)
+            end
+        end
+```
+to generate this code:
+```ruby
+
+        def add(other);        @scope.add(self, other);  end
+        def sub(other);        @scope.sub(self, other);  end
+        def xor(other);       @scope.xor(self, other);  end
+        def or(other);       @scope.or(self, other);   end
+        def and(other);       @scope.and(self, other);  end
+        def sll(other);      @scope.sll(self, other);  end
+        def srl(other);      @scope.srl(self, other);  end
+        def slt(other);     @scope.slt(self, other);  end
+        def sltu(other);    @scope.sltu(self, other); end
+```
+
 ### Decoder usecase example.
 
 We have this mircoassmbler code example
