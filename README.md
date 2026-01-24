@@ -89,10 +89,10 @@ The task is to write an effective decoder based on building a decoding tree. For
 
 | Algo Description | Description |
 |------------------|-------------|
-|	first implementation based on decoding individual fields. 3 levels| ![decoder_tree](./md/tree.png)|
+|	first implementation based on decoding individual fields. 4 levels| ![decoder_tree](./md/tree.png)|
 | second implementation - **scoring algorithm** (bit_basis_length=2). 3 levels | ![img](./md/bit_basis_length=2.png)
-| second implementaion (bit_basis_length=3). 2 levels. | ![img](./md/bit_basis_length=3.png)|
-| second implementation (bit_basis_length=4) 1 level| ![img](./md/bit_basis_length=4.png) |
+| second implementaion (bit_basis_length=3). 3 levels. | ![img](./md/bit_basis_length=3.png)|
+| second implementation (bit_basis_length=4) 2 levels| ![img](./md/bit_basis_length=4.png) |
 
 ### How to decode a program on RISCV IM32 Architecture using my decoder?
 
