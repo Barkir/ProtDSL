@@ -57,6 +57,16 @@ module SimInfra
       return n_total - n_x - (n_0 - n_1).abs
   end
 
+    ## some shitty offset formula i need to explain
+    ## so, we found out a bit at 12th position on the 1st iteration of our cycle
+    ## if we have, let's say a basis length of 4 bits, then we have 4 iterations (n goes from 0 to 3)
+    ## so, we need to place this bit at the 3rd position, then the next bit in basis at the 2nd, at the 1st at the 0th...
+    ## to do that we count offset
+    ## it is equal to value[:nbit] - (STANDARD_BIT_BASIS_SIZE - 1 - n) + 1
+    ## STANDARD_BIT_BASIS_SIZE - 1 - n is actually the bit we want to place. e.g we want to place it to the 2nd bit, it is the 2nd iteration
+    ## this will eqaul 4 - 1 - 1 = 2.
+
+
   def self.generate_get_bits_function(executers, bitBasis, depth)
         # executers.write("int getBitsAtLevel#{depth}(uint32_t command) {\n")
         var_name = "bits_#{depth}_#{bitBasis.map{|n| n[:nbit]}.join()}"
@@ -71,24 +81,24 @@ module SimInfra
             mask = ("1" + "0" * (value[:nbit])).rjust(32, '0')
             print("mask = " + mask + "\n")
 
-            offset = value[:nbit] - n  >= 0 ? (value[:nbit] - n) : (n - value[:nbit])
-
-            if value[:nbit] - n >= 0
+            # offset = value[:nbit] - n >= 0 ? (value[:nbit] - n) : (n - value[:nbit])
+            offset = value[:nbit] - (bitBasis.length - 1 - n)
+            if offset >= 0
                 executers.write("\t" * depth + "bitMask = (command & 0b#{mask}) >> #{offset};\n")
-            elsif value[:nbit] - n < 0
-                executers.write("\t" * depth + "bitMask = (command & 0b#{mask}) << #{offset};\n")
+            else
+                executers.write("\t" * depth + "bitMask = (command & 0b#{mask}) << #{offset.abs};\n")
             end
 
             #LOGS######
-#             executers.write("\t" * depth + "std::cout << std::bitset<32>(command) << \"\t&\"<< std::endl;\n")
-#             executers.write("\t" * depth + "std::cout << std::bitset<32>(0b#{mask}) << std::endl;\n")
-#             executers.write("\t" * depth + "std::cout << \"\t\t=\" << std::endl;\n")
-#             executers.write("\t" * depth + "std::cout << std::bitset<32>(bitMask) << std::endl;\n")
-#
-#             executers.write("\t" * depth + "std::cout << std::bitset<32>(#{var_name}) << std::endl;\n")
-#             executers.write("\t" * depth + "std::cout << \"\t\t+\" << std::endl;\n")
-#             executers.write("\t" * depth + "std::cout << std::bitset<32>(bitMask) << std::endl;\n")
-#             executers.write("\t" * depth + "std::cout << \"\t\t=\" << std::endl;\n")
+            # executers.write("\t" * depth + "std::cout << std::bitset<32>(command) << \"\t&\"<< std::endl;\n")
+            # executers.write("\t" * depth + "std::cout << std::bitset<32>(0b#{mask}) << std::endl;\n")
+            # executers.write("\t" * depth + "std::cout << \"\t\t=\" << std::endl;\n")
+            # executers.write("\t" * depth + "std::cout << std::bitset<32>(bitMask) << std::endl;\n")
+
+            # executers.write("\t" * depth + "std::cout << std::bitset<32>(#{var_name}) << std::endl;\n")
+            # executers.write("\t" * depth + "std::cout << \"\t\t+\" << std::endl;\n")
+            # executers.write("\t" * depth + "std::cout << std::bitset<32>(bitMask) << std::endl;\n")
+            # executers.write("\t" * depth + "std::cout << \"\t\t=\" << std::endl;\n")
             #LOGS######
 
             executers.write("\t" * depth + "\t#{var_name} += bitMask;\n")
@@ -100,7 +110,7 @@ module SimInfra
 
         end
 
-        executers.write("\t" * depth + "\t#{var_name} = flipMask(#{var_name}, #{STANDARD_BIT_BASIS_SIZE});\n")
+        # executers.write("\t" * depth + "\t#{var_name} = flipMask(#{var_name}, #{STANDARD_BIT_BASIS_SIZE});\n")
 
         #LOGS######
         # executers.write("\t" * depth + "std::cout << \"flipped: \" << std::bitset<32>(#{var_name}) << std::endl;\n")

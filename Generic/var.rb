@@ -29,15 +29,12 @@ module SimInfra
     end
     #
     class Var
-        R_TYPE.each do |op|
-            define_method(op) do |other|
-                @scope.send(op, self, other)
-            end
-        end
 
-        I_TYPE.each do |op|
-            define_method(op) do |other|
-                @scope.send(op, self, other)
+        ALL_TYPES.each do |type|
+            type.each do |op|
+                define_method(op) do |other|
+                    @scope.send(op, self, other)
+                end
             end
         end
     end

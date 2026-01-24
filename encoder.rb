@@ -645,4 +645,321 @@ end
 
 
 # ==============================================
+# ==============================================
+# ld functions block
+# ==============================================
+def ld(rd, rs1, imm)
+	skip_if_collect do
+		write_command(translateld([
+			rd,
+			rs1,
+			3,
+			imm,
+			0,
+		]))
+	end
+end
+
+def translateld(operands)
+	command = 0
+	rd=operands[0]
+	command = set_bits(command, rd, 11, 7)
+	rs1=operands[1]
+	command = set_bits(command, rs1, 19, 15)
+	opcode=operands[2]
+	command = set_bits(command, opcode, 6, 0)
+	imm=operands[3]
+	command = set_bits(command, imm, 31, 20)
+	funct3=operands[4]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# lh functions block
+# ==============================================
+def lh(rd, rs1, imm)
+	skip_if_collect do
+		write_command(translatelh([
+			rd,
+			rs1,
+			3,
+			imm,
+			1,
+		]))
+	end
+end
+
+def translatelh(operands)
+	command = 0
+	rd=operands[0]
+	command = set_bits(command, rd, 11, 7)
+	rs1=operands[1]
+	command = set_bits(command, rs1, 19, 15)
+	opcode=operands[2]
+	command = set_bits(command, opcode, 6, 0)
+	imm=operands[3]
+	command = set_bits(command, imm, 31, 20)
+	funct3=operands[4]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# lw functions block
+# ==============================================
+def lw(rd, rs1, imm)
+	skip_if_collect do
+		write_command(translatelw([
+			rd,
+			rs1,
+			3,
+			imm,
+			2,
+		]))
+	end
+end
+
+def translatelw(operands)
+	command = 0
+	rd=operands[0]
+	command = set_bits(command, rd, 11, 7)
+	rs1=operands[1]
+	command = set_bits(command, rs1, 19, 15)
+	opcode=operands[2]
+	command = set_bits(command, opcode, 6, 0)
+	imm=operands[3]
+	command = set_bits(command, imm, 31, 20)
+	funct3=operands[4]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# lbu functions block
+# ==============================================
+def lbu(rd, rs1, imm)
+	skip_if_collect do
+		write_command(translatelbu([
+			rd,
+			rs1,
+			3,
+			imm,
+			4,
+		]))
+	end
+end
+
+def translatelbu(operands)
+	command = 0
+	rd=operands[0]
+	command = set_bits(command, rd, 11, 7)
+	rs1=operands[1]
+	command = set_bits(command, rs1, 19, 15)
+	opcode=operands[2]
+	command = set_bits(command, opcode, 6, 0)
+	imm=operands[3]
+	command = set_bits(command, imm, 31, 20)
+	funct3=operands[4]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# lhu functions block
+# ==============================================
+def lhu(rd, rs1, imm)
+	skip_if_collect do
+		write_command(translatelhu([
+			rd,
+			rs1,
+			3,
+			imm,
+			5,
+		]))
+	end
+end
+
+def translatelhu(operands)
+	command = 0
+	rd=operands[0]
+	command = set_bits(command, rd, 11, 7)
+	rs1=operands[1]
+	command = set_bits(command, rs1, 19, 15)
+	opcode=operands[2]
+	command = set_bits(command, opcode, 6, 0)
+	imm=operands[3]
+	command = set_bits(command, imm, 31, 20)
+	funct3=operands[4]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# ecall functions block
+# ==============================================
+def ecall()
+	skip_if_collect do
+		write_command(translateecall([
+			115,
+			0,
+			0,
+		]))
+	end
+end
+
+def translateecall(operands)
+	command = 0
+	opcode=operands[0]
+	command = set_bits(command, opcode, 6, 0)
+	imm0=operands[1]
+	command = set_bits(command, imm0, 31, 20)
+	funct3=operands[2]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# ebreak functions block
+# ==============================================
+def ebreak()
+	skip_if_collect do
+		write_command(translateebreak([
+			115,
+			1,
+			0,
+		]))
+	end
+end
+
+def translateebreak(operands)
+	command = 0
+	opcode=operands[0]
+	command = set_bits(command, opcode, 6, 0)
+	imm0=operands[1]
+	command = set_bits(command, imm0, 31, 20)
+	funct3=operands[2]
+	command = set_bits(command, funct3, 14, 12)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# sb functions block
+# ==============================================
+def sb(rs1, rs2, imm)
+	skip_if_collect do
+		write_command(translatesb([
+			rs1,
+			rs2,
+			0,
+			35,
+			0,
+			0,
+		]))
+	end
+end
+
+def translatesb(operands)
+	command = 0
+	rs1=operands[0]
+	command = set_bits(command, rs1, 19, 15)
+	rs2=operands[1]
+	command = set_bits(command, rs2, 24, 20)
+	funct3=operands[2]
+	command = set_bits(command, funct3, 14, 12)
+	opcode=operands[3]
+	command = set_bits(command, opcode, 6, 0)
+	imm=operands[4]
+	command = set_bits(command, imm, 11, 7)
+	imm1=operands[5]
+	command = set_bits(command, imm1, 31, 25)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# sh functions block
+# ==============================================
+def sh(rs1, rs2, imm)
+	skip_if_collect do
+		write_command(translatesh([
+			rs1,
+			rs2,
+			1,
+			35,
+			0,
+			0,
+		]))
+	end
+end
+
+def translatesh(operands)
+	command = 0
+	rs1=operands[0]
+	command = set_bits(command, rs1, 19, 15)
+	rs2=operands[1]
+	command = set_bits(command, rs2, 24, 20)
+	funct3=operands[2]
+	command = set_bits(command, funct3, 14, 12)
+	opcode=operands[3]
+	command = set_bits(command, opcode, 6, 0)
+	imm=operands[4]
+	command = set_bits(command, imm, 11, 7)
+	imm1=operands[5]
+	command = set_bits(command, imm1, 31, 25)
+	return command
+end
+
+
+# ==============================================
+# ==============================================
+# sw functions block
+# ==============================================
+def sw(rs1, rs2, imm)
+	skip_if_collect do
+		write_command(translatesw([
+			rs1,
+			rs2,
+			2,
+			35,
+			0,
+			0,
+		]))
+	end
+end
+
+def translatesw(operands)
+	command = 0
+	rs1=operands[0]
+	command = set_bits(command, rs1, 19, 15)
+	rs2=operands[1]
+	command = set_bits(command, rs2, 24, 20)
+	funct3=operands[2]
+	command = set_bits(command, funct3, 14, 12)
+	opcode=operands[3]
+	command = set_bits(command, opcode, 6, 0)
+	imm=operands[4]
+	command = set_bits(command, imm, 11, 7)
+	imm1=operands[5]
+	command = set_bits(command, imm1, 31, 25)
+	return command
+end
+
+
+# ==============================================
 end

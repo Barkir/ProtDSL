@@ -30,18 +30,14 @@ module SimInfra
             stmt op, [tmpvar(a.type), a, b]
         end
 
-        # redefine! add & sub will never be the same
-        R_TYPE.each do |op|
-            define_method(op) do |a, b|
-                binOp(a, b, op)
+        ALL_TYPES.each do |type|
+            type.each do |op|
+                define_method(op) do |a, b|
+                    binOp(a, b, op)
+                end
             end
         end
 
-        I_TYPE.each do |op|
-            define_method(op) do |a, b|
-                binOp(a, b, op)
-            end
-        end
 
         private def tmpvar(type); var("_tmp#{next_counter}".to_sym, type); end
         # stmtadds statement into tree and returns operand[0]

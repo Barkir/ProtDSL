@@ -19,7 +19,7 @@ module SimInfra
     end
     instruction_map.each do |name, value|
         value_clean = value.map {|n| n[:value].to_s}
-        print name, "\t", value_clean.join("")
+        print name, "\t", value_clean.join("").reverse
         print "\n"
     end
     printf(":: got bitRange %s \n", bitRange.to_s)

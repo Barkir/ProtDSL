@@ -1,0 +1,13 @@
+addi
+xori
+ori
+andi
+slli
+srli
+slti
+sltiu
+ld
+lh
+lw
+lbu
+lhu

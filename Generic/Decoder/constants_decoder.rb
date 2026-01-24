@@ -1,9 +1,22 @@
 INSTRUCTION_SIZE_IN_BITS = 32
-STANDARD_BIT_BASIS_SIZE  = 2
+STANDARD_BIT_BASIS_SIZE  = 4
 
 
 R_TYPE = %i[add sub xor or and sll srl slt sltu]
-I_TYPE = %i[addi andi xori ori slli srli slti sltiu]
+
+I_TYPE_ALU = %i[addi andi xori ori slli srli slti sltiu]
+I_TYPE_LOAD = %i[ld lh lw lbu lhu]
+I_TYPE_E = %i[ecall ebreak]
+I_TYPE_J = %i[jalr]
+
+S_TYPE = %i[sb sh sw]
+B_TYPE = %i[beq bne blt bge bltu bgeu]
+J_TYPE = %i[jal]
+U_TYPE = %i[lui auipc]
+
+ALL_TYPES = [R_TYPE, I_TYPE_ALU, I_TYPE_LOAD, I_TYPE_E, I_TYPE_J, S_TYPE, B_TYPE, J_TYPE, U_TYPE]
+
+
 
 REGULAR_HEADER_CODE = <<~CODE
     #include <vector>

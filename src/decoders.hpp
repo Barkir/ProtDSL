@@ -50,3 +50,33 @@ void inline decodeslti(SPU& spu, uint32_t command) {
 void inline decodesltiu(SPU& spu, uint32_t command) {
 	std::cout << "sltiu " << std::endl;
 }
+void inline decodeld(SPU& spu, uint32_t command) {
+	std::cout << "ld " << std::endl;
+}
+void inline decodelh(SPU& spu, uint32_t command) {
+	std::cout << "lh " << std::endl;
+}
+void inline decodelw(SPU& spu, uint32_t command) {
+	std::cout << "lw " << std::endl;
+}
+void inline decodelbu(SPU& spu, uint32_t command) {
+	std::cout << "lbu " << std::endl;
+}
+void inline decodelhu(SPU& spu, uint32_t command) {
+	std::cout << "lhu " << std::endl;
+}
+void inline decodeecall(SPU& spu, uint32_t command) {
+	std::cout << "ecall " << std::endl;
+}
+void inline decodeebreak(SPU& spu, uint32_t command) {
+	std::cout << "ebreak " << std::endl;
+}
+void inline decodesb(SPU& spu, uint32_t command) {
+	std::cout << "sb " << std::endl;
+}
+void inline decodesh(SPU& spu, uint32_t command) {
+	std::cout << "sh " << std::endl;
+}
+void inline decodesw(SPU& spu, uint32_t command) {
+	std::cout << "sw " << std::endl;
+}

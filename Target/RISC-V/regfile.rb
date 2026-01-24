@@ -22,6 +22,10 @@ module SimInfra
         def to_s
             @name.to_s
         end
+
+        def to_i(base)
+            @name.to_s.to_i(base)
+        end
     end
 
     def XImm(name); XImm.new(name); end
