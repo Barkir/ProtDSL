@@ -1,6 +1,9 @@
 require_relative "decoder_tree.rb"
 require_relative "DecoderDSL.rb"
 require_relative "switch.rb"
+require_relative "constants_decoder.rb"
+
+require 'yaml'
 
 module SimInfra
 
@@ -21,7 +24,13 @@ module SimInfra
         executers = File.open("src/executers.hpp", "w")
         executers.write("#pragma once\n")
 
+        thing = YAML.safe_load(YAML_PATH)
+
+        puts thing.inspect
+
         create_decoding_tree(executers)
+
+
 
         @@instructions.each do |instr|
         executers.write("void inline execute#{instr.name}(SPU& spu, uint32_t command) {\n")

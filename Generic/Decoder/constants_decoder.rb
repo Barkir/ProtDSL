@@ -1,6 +1,8 @@
 INSTRUCTION_SIZE_IN_BITS = 32
 STANDARD_BIT_BASIS_SIZE  = 4
 
+YAML_PATH = "/home/kirill/Side-Projects/ProtDSL/IR.yaml"
+
 
 R_TYPE = %i[add sub xor or and sll srl slt sltu]
 

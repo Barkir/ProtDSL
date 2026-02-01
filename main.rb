@@ -7,5 +7,12 @@ require_relative "Generic/Encoder/encoder_generator.rb"
 require_relative "Generic/Decoder/decoder_generator.rb"
 
 SimInfra.serialize
-SimInfra.create_encoder
+
+### AT THIS POINT IR.YAML is created
+
+# SimInfra.create_encoder
+
+# WE CAN USE OUR OWN ENCODER BUT THERE IS NO NEED
+# SINCE WE GOT RISC-V TOOLCHAIN...
+
 SimInfra.create_decoder

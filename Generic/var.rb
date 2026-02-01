@@ -38,4 +38,11 @@ module SimInfra
             end
         end
     end
+
+    class Field
+        attr_reader :name, :from, :to, :value
+        def initialize(name, from, to, value = nil)
+            @name = name; @from = from; @to = to; @value = value
+        end
+    end
 end

@@ -36,5 +36,7 @@ module SimInfra
     end
 
     def assert(condition, msg = nil); raise msg if !condition; end
+
+
 end
 
