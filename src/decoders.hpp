@@ -80,3 +80,247 @@ void inline decodesh(SPU& spu, uint32_t command) {
 void inline decodesw(SPU& spu, uint32_t command) {
 	std::cout << "sw " << std::endl;
 }
+void inline bigSwitchDecode(SPU& spu, uint32_t command){
+		uint32_t bits_1_5121314 = 0;
+		uint32_t bitMask = 0;
+		bitMask = (command & 0b00000000000000000000000000100000) >> 2;
+		bits_1_5121314 += bitMask;
+		bitMask = (command & 0b00000000000000000001000000000000) >> 10;
+		bits_1_5121314 += bitMask;
+		bitMask = (command & 0b00000000000000000010000000000000) >> 12;
+		bits_1_5121314 += bitMask;
+		bitMask = (command & 0b00000000000000000100000000000000) >> 14;
+		bits_1_5121314 += bitMask;
+		switch(bits_1_5121314) {
+		case 0:
+		{
+			uint32_t bits_2_4 = 0;
+			uint32_t bitMask = 0;
+			bitMask = (command & 0b00000000000000000000000000010000) >> 4;
+			bits_2_4 += bitMask;
+			switch(bits_2_4) {
+			case 0:
+			{
+				decodeld(spu, command);
+				break;
+			}
+			case 1:
+			{
+				decodeaddi(spu, command);
+				break;
+			}
+			default: break;
+			}
+			break;
+		}
+		case 1:
+		{
+			uint32_t bits_2_4 = 0;
+			uint32_t bitMask = 0;
+			bitMask = (command & 0b00000000000000000000000000010000) >> 4;
+			bits_2_4 += bitMask;
+			switch(bits_2_4) {
+			case 0:
+			{
+				decodelbu(spu, command);
+				break;
+			}
+			case 1:
+			{
+				decodexori(spu, command);
+				break;
+			}
+			default: break;
+			}
+			break;
+		}
+		case 2:
+		{
+			uint32_t bits_2_4 = 0;
+			uint32_t bitMask = 0;
+			bitMask = (command & 0b00000000000000000000000000010000) >> 4;
+			bits_2_4 += bitMask;
+			switch(bits_2_4) {
+			case 0:
+			{
+				decodelw(spu, command);
+				break;
+			}
+			case 1:
+			{
+				decodeslti(spu, command);
+				break;
+			}
+			default: break;
+			}
+			break;
+		}
+		case 3:
+		{
+			decodeori(spu, command);
+			break;
+		}
+		case 4:
+		{
+			uint32_t bits_2_4 = 0;
+			uint32_t bitMask = 0;
+			bitMask = (command & 0b00000000000000000000000000010000) >> 4;
+			bits_2_4 += bitMask;
+			switch(bits_2_4) {
+			case 0:
+			{
+				decodelh(spu, command);
+				break;
+			}
+			case 1:
+			{
+				decodeslli(spu, command);
+				break;
+			}
+			default: break;
+			}
+			break;
+		}
+		case 5:
+		{
+			uint32_t bits_2_4 = 0;
+			uint32_t bitMask = 0;
+			bitMask = (command & 0b00000000000000000000000000010000) >> 4;
+			bits_2_4 += bitMask;
+			switch(bits_2_4) {
+			case 0:
+			{
+				decodelhu(spu, command);
+				break;
+			}
+			case 1:
+			{
+				decodesrli(spu, command);
+				break;
+			}
+			default: break;
+			}
+			break;
+		}
+		case 6:
+		{
+			decodesltiu(spu, command);
+			break;
+		}
+		case 7:
+		{
+			decodeandi(spu, command);
+			break;
+		}
+		case 8:
+		{
+			uint32_t bits_2_642030 = 0;
+			uint32_t bitMask = 0;
+			bitMask = (command & 0b00000000000000000000000001000000) >> 3;
+			bits_2_642030 += bitMask;
+			bitMask = (command & 0b00000000000000000000000000010000) >> 2;
+			bits_2_642030 += bitMask;
+			bitMask = (command & 0b00000000000100000000000000000000) >> 19;
+			bits_2_642030 += bitMask;
+			bitMask = (command & 0b01000000000000000000000000000000) >> 30;
+			bits_2_642030 += bitMask;
+			switch(bits_2_642030) {
+			case 0:
+			{
+				decodesb(spu, command);
+				break;
+			}
+			case 4:
+			{
+				decodeadd(spu, command);
+				break;
+			}
+			case 5:
+			{
+				decodesub(spu, command);
+				break;
+			}
+			case 12:
+			{
+				decodeecall(spu, command);
+				break;
+			}
+			case 14:
+			{
+				decodeebreak(spu, command);
+				break;
+			}
+			default: break;
+			}
+			break;
+		}
+		case 9:
+		{
+			decodexor(spu, command);
+			break;
+		}
+		case 10:
+		{
+			uint32_t bits_2_4 = 0;
+			uint32_t bitMask = 0;
+			bitMask = (command & 0b00000000000000000000000000010000) >> 4;
+			bits_2_4 += bitMask;
+			switch(bits_2_4) {
+			case 0:
+			{
+				decodesw(spu, command);
+				break;
+			}
+			case 1:
+			{
+				decodeslt(spu, command);
+				break;
+			}
+			default: break;
+			}
+			break;
+		}
+		case 11:
+		{
+			decodeor(spu, command);
+			break;
+		}
+		case 12:
+		{
+			uint32_t bits_2_4 = 0;
+			uint32_t bitMask = 0;
+			bitMask = (command & 0b00000000000000000000000000010000) >> 4;
+			bits_2_4 += bitMask;
+			switch(bits_2_4) {
+			case 0:
+			{
+				decodesh(spu, command);
+				break;
+			}
+			case 1:
+			{
+				decodesll(spu, command);
+				break;
+			}
+			default: break;
+			}
+			break;
+		}
+		case 13:
+		{
+			decodesrl(spu, command);
+			break;
+		}
+		case 14:
+		{
+			decodesltu(spu, command);
+			break;
+		}
+		case 15:
+		{
+			decodeand(spu, command);
+			break;
+		}
+		default: break;
+		}
+}

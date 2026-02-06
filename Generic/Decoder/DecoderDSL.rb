@@ -31,8 +31,9 @@ module SimInfra
     self.add_instruction :getreg do |irstmt, operands|
         reg_to_load = operands[irstmt.oprnds[0].to_s]
         reg_to_get = operands[irstmt.oprnds[1].to_s]
-        "\t#{reg_to_load.name} = spu.regs[getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)})];\n
-        \t//#{reg_to_load.name}_name = getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)});\n"
+
+        "\t#{reg_to_load.name} = spu.regs[getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)})];\n"
+        # \t//#{reg_to_load.name}_name = getField(command, #{reg_to_get.to}, #{reg_to_get.from}, #{create_mask(reg_to_get.to, reg_to_get.from)});\n"
     end
 
     self.add_instruction :setreg do |irstmt, operands|
@@ -42,48 +43,52 @@ module SimInfra
     end
 
     self.add_instruction :add do |irstmt, operands|
-        "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} + #{irstmt.oprnds[2].name};\n"
+        "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} + #{irstmt.oprnds[2].name}; //\t\t\tadd\n"
     end
 
     self.add_instruction :sub do |irstmt, operands|
-        "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} - #{irstmt.oprnds[2].name};\n"
+        "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} - #{irstmt.oprnds[2].name}; //\t\t\tsub\n"
     end
 
     self.add_instruction :let do |irstmt, operands|
-        "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name};\n"
+        "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name}; //\tlet\n"
     end
 
     self.add_instruction :new_var do |irstmt, operands|
-        "\tuint32_t #{irstmt.oprnds[0].name} = 0;\n
-        \t //uint32_t #{irstmt.oprnds[0].name}_name = -1;\n"
+        "\tuint32_t #{irstmt.oprnds[0].name} = 0; //\tnew_var\n"
+        # \t //uint32_t #{irstmt.oprnds[0].name}_name = -1;\n"
     end
 
     self.add_instruction :srl do |irstmt, operands|
-        "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} >> #{irstmt.oprnds[2].name};\n"
+        "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} >> #{irstmt.oprnds[2].name}; //\t\t\tsrl\n"
     end
 
     self.add_instruction :sll do |irstmt, operands|
-        "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} << #{irstmt.oprnds[2].name};\n"
+        "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} << #{irstmt.oprnds[2].name}; //\t\t\tsll\n"
     end
 
     self.add_instruction :or do |irstmt, operands|
-        "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} | #{irstmt.oprnds[2].name};\n"
+        "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} | #{irstmt.oprnds[2].name}; //\t\t\tor\n"
     end
 
     self.add_instruction :and do |irstmt, operands|
-        "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} & #{irstmt.oprnds[2].name};\n"
+        "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} & #{irstmt.oprnds[2].name}; //\t\t\tand\n"
     end
 
     self.add_instruction :xor do |irstmt, operands|
-        "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} ^ #{irstmt.oprnds[2].name};\n"
+        "\t#{irstmt.oprnds[0].name} = #{irstmt.oprnds[1].name} ^ #{irstmt.oprnds[2].name}; //\t\t\txor\n"
     end
 
     self.add_instruction :slt do |irstmt, operands|
-        "\t#{irstmt.oprnds[0].name} = (#{irstmt.oprnds[1].name} < #{irstmt.oprnds[2].name})?1:0\n;"
+        "\t#{irstmt.oprnds[0].name} = (#{irstmt.oprnds[1].name} < #{irstmt.oprnds[2].name})?1:0; //\t\t\tslt\n"
     end
 
     self.add_instruction :sltu do |irstmt, operands|
-        "\t#{irstmt.oprnds[0].name} = (#{irstmt.oprnds[1].name} < #{irstmt.oprnds[2].name})?1:0\n;"
+        "\t#{irstmt.oprnds[0].name} = (#{irstmt.oprnds[1].name} < #{irstmt.oprnds[2].name})?1:0; //\t\t\tsltu\n"
+    end
+
+    self.add_instruction :addi do |irstmt, operands|
+        "\t#{irstmt.oprnds[0].name} = (#{irstmt.oprnds[1].name} + #{irstmt.oprnds[2].name});     //\t\t\taddi\n"
     end
 end
 end

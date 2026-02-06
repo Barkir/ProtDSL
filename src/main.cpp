@@ -83,7 +83,7 @@ void init(std::vector<uint32_t> commands, size_t fsize) {
 
         auto command = getCommand(commands_1byte, spu.pc);
         // std::cout << "command = \n" << std::bitset<32>(command) << std::endl;
-        bigSwitch(spu, command);
+        bigSwitchDecode(spu, command);
         spu.pc += PC_INC;
 	}
 }

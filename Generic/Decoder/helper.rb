@@ -92,9 +92,9 @@ module SimInfra
             # offset = value[:nbit] - n >= 0 ? (value[:nbit] - n) : (n - value[:nbit])
             offset = value[:nbit] - (bitBasis.length - 1 - n)
             if offset >= 0
-                executers.write("\t" * depth + "bitMask = (command & 0b#{mask}) >> #{offset};\n")
+                executers.write("\t" * (depth + 1) + "bitMask = (command & 0b#{mask}) >> #{offset};\n")
             else
-                executers.write("\t" * depth + "bitMask = (command & 0b#{mask}) << #{offset.abs};\n")
+                executers.write("\t" * (depth + 1) + "bitMask = (command & 0b#{mask}) << #{offset.abs};\n")
             end
 
             #LOGS######

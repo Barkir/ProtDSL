@@ -29,6 +29,7 @@ module SimInfra
     end
 
     def self.create_decoder
+
         decoders = File.open("src/decoders.hpp", "w")
         decoders.write("#pragma once\n")
         executers = File.open("src/executers.hpp", "w")
@@ -36,15 +37,11 @@ module SimInfra
 
         things = YAML.load_file(YAML_PATH, permitted_classes: PERMITTED_CLASSES, aliases: true)
 
-        # puts things
-        # puts "---------------------"
-        # puts @@instructions
-
         create_decoding_tree(executers)
         things.each do |thing|
         instr = OpenStruct.new(thing.to_h)
 
-        executers.write("void inline execute#{instr}(SPU& spu, uint32_t command) {\n")
+        executers.write("void inline execute#{instr.name}(SPU& spu, uint32_t command) {\n")
         operands = getOperandsAsHashTable(instr)
         instr.code.instance_variable_get(:@tree).each do |irstmt|
             irstmt_s = OpenStruct.new(irstmt.to_h)
@@ -58,6 +55,6 @@ module SimInfra
 
         end
         # print @@instructions
-        create_big_switch(executers)
+        create_big_switch(decoders, executers)
     end
 end
