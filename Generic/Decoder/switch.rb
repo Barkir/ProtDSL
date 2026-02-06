@@ -1,4 +1,5 @@
 require_relative "helper.rb"
+require_relative "../base.rb"
 
 module SimInfra
     def self.generate_switch(executer, subtree, level)

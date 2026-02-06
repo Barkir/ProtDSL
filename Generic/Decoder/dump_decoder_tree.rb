@@ -1,6 +1,7 @@
 # dump_tree.rb
 require_relative "helper.rb"
 require "fileutils"
+require_relative "../base.rb"
 
 module SimInfra
   DEFAULT_DOT_FILENAME = "dot/tree.dot"

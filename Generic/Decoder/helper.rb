@@ -1,3 +1,6 @@
+require_relative "../base.rb"
+require 'ostruct'
+
 module SimInfra
 
     def self.create_mask(from, to) # from < to
@@ -5,8 +8,13 @@ module SimInfra
     end
 
     def self.getOperandsAsHashTable(instr)
-        operands = instr.fields.select{|f| f.value == :reg}
-        .each_with_object({}){|f, h| h[f.name.to_s] = f}
+        puts "-------------------"
+        puts instr
+        operands = instr.fields.select{|f| f[:value] == :reg}
+        .each_with_object({}){|f, h| h[f[:name].to_s] = OpenStruct.new(f.to_h)}
+        puts "################"
+        puts operands
+        puts "################"
         return operands
     end
 

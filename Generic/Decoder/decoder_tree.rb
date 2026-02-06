@@ -1,5 +1,6 @@
 require_relative "dump_decoder_tree.rb"
 require_relative "helper.rb"
+require_relative "../base.rb"
 
 module SimInfra
   def self.build_decoding_tree(executers, tree, instruction_map, depth=0)

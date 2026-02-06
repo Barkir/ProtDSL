@@ -1,5 +1,6 @@
 require_relative "constants_decoder"
 require_relative "helper.rb"
+require_relative "../base.rb"
 
 module SimInfra
    class DecoderDSL
