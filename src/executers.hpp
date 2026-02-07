@@ -256,8 +256,19 @@ void inline executelhu(SPU& spu, uint32_t command) {
 	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
 }
 void inline executeecall(SPU& spu, uint32_t command) {
+	// handling system call
+	uint32_t syscall_num = spu.regs[17]; // a7
+	uint32_t arg1 = spu.regs[10]; // a0
+	uint32_t arg2 = spu.regs[11]; // a1
+	uint32_t arg3 = spu.regs[12]; // a2
+	// something is happening
 }
 void inline executeebreak(SPU& spu, uint32_t command) {
+	// Точка останова - обычно вызывает исключение отладчика
+	spu.breakpoint = true;
+	// Можно также установить флаг trap
+	// trap = true;
+	// trap_cause = BREAKPOINT;
 }
 void inline executesb(SPU& spu, uint32_t command) {
 	uint32_t rs1 = 0; //	new_var

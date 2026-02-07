@@ -38,7 +38,7 @@ I_TYPE_E.each do |name|
     Instruction(name) {
         encoding *format_i_e(name)
         asm {"#{name}"}
-        code {}
+        code { special(name) }
     }
 end
 

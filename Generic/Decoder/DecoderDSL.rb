@@ -20,6 +20,7 @@ module SimInfra
 
 
         def write_ir(decoder, irstmt, operands)
+            puts irstmt.name.to_s
             template = instructions[irstmt.name.to_s]
             if template
                 decoder.write(template.call(irstmt, operands))
@@ -189,25 +190,19 @@ module SimInfra
       \tspu.memory_write_uint32(addr, #{irstmt.oprnds[1].name});\n"
     end
 
-    self.add_instruction :ecall do |irstmt, operands|
+    self.add_instruction :ecall do
       <<~CODE
-        \t// Обработка системного вызова
+        \t// handling system call
         \tuint32_t syscall_num = spu.regs[17]; // a7
         \tuint32_t arg1 = spu.regs[10]; // a0
         \tuint32_t arg2 = spu.regs[11]; // a1
         \tuint32_t arg3 = spu.regs[12]; // a2
-        \t
-        \t// Здесь должна быть реализация обработки системного вызова
-        \t// spu.regs[10] = handle_syscall(syscall_num, arg1, arg2, arg3);
-        \t
-        \t// Увеличиваем PC
-        \tpc_next = pc + 4;
+        \t// something is happening
       CODE
     end
 
-    self.add_instruction :ebreak do |irstmt, operands|
+    self.add_instruction :ebreak do
       <<~CODE
-        \t// Точка останова - обычно вызывает исключение отладчика
         \tspu.breakpoint = true;
         \t// Можно также установить флаг trap
         \t// trap = true;

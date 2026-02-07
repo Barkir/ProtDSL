@@ -18,6 +18,7 @@ public:
 
 struct SPU {
     public: // arguments
+    bool breakpoint;
     uint32_t pc;
     uint32_t regs[32];
     size_t cap;

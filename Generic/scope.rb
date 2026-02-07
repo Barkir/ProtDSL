@@ -38,6 +38,14 @@ module SimInfra
             end
         end
 
+        def special(op)
+        @tree << {
+            type: :special,
+            name: op,           # :ecall или :ebreak
+        }
+        end
+
+
 
         private def tmpvar(type); var("_tmp#{next_counter}".to_sym, type); end
         # stmtadds statement into tree and returns operand[0]
