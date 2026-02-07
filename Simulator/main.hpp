@@ -1,5 +1,7 @@
 #pragma once
 
+#include <elfio/elfio.hpp>
+
 uint32_t getField(uint32_t command, int32_t from, int32_t to, int32_t mask);
 uint32_t getCommand(const std::vector<uint8_t> commands, size_t pc);
 int get_commands(std::vector<uint32_t> *commands, const std::string& filename, size_t *fsz);
@@ -25,6 +27,17 @@ enum toyErrors {
     TOY_FAILED = -1
 };
 
+void elfdump(const char* data, size_t size) {
+    for (size_t i = 0; i < size; ++i) {
+        if (i % 16 == 0) {
+            if (i != 0) std::cout << std::endl;
+            std::cout << std::hex << std::setw(8) << std::setfill('0') << i << ": ";
+        }
+        printf("%02x ", (unsigned char)data[i]);
+    }
+    std::cout << std::dec << std::endl;
+}
+
 uint32_t flipMask(uint32_t bitmask, int numBits)
 {
     uint32_t flippedMask = 0;
@@ -38,33 +51,40 @@ uint32_t flipMask(uint32_t bitmask, int numBits)
 
 int get_commands(std::vector<uint32_t> *commands, const std::string& filename, size_t *fsz) {
     std::ifstream file(filename, std::ios::binary);
+    ELFIO::elfio reader;
 
     if (!file) {
         std::cerr << "Error reading file: " << filename << "\n";
         return -1;
     }
 
-    size_t fSize = getFileSize(file);
-    *fsz = fSize;
-    if (fSize % COMMAND_SIZE || fSize == 0) {
-        std::cerr << "WRONG FILE SIZE " << fSize << "\n";
-        file.close();
+    if (!reader.load(filename)) {
+        std::cerr << "Can't process elf file -> " << filename << std::endl;
         return -1;
     }
 
-    if (file.is_open()) {
-        std::vector<char> buffer(fSize);
-        file.read(buffer.data(), fSize);
-        // ON_DEBUG(hexDump(buffer));
+    const char *data = nullptr;
+    for (const auto& section : reader.sections) {
+        auto name = section->get_name();
 
-        *commands = std::vector<uint32_t>(
-        reinterpret_cast<const uint32_t*>(buffer.data()),
-        reinterpret_cast<const uint32_t*>(buffer.data()) + fSize / COMMAND_SIZE
-        );
-
-        return 0;
+        if (section->get_size() == 0) continue;
+        if (name == ".text") {
+            data = section->get_data();
+            if (data != nullptr) {
+                elfdump(data, 64);
+                break;
+            }
+        }
     }
-    return -1;
+
+    size_t fSize = getFileSize(file);
+    // ON_DEBUG(hexDump(buffer));
+    *commands = std::vector<uint32_t>(
+    reinterpret_cast<const uint32_t*>(data),
+    reinterpret_cast<const uint32_t*>(data) + fSize / COMMAND_SIZE
+    );
+
+    return 0;
 }
 
 uint32_t getCommand(const std::vector<uint8_t> commands, size_t pc) {

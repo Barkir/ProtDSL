@@ -19,7 +19,21 @@ set(HEADERS
     spu.hpp
 )
 
+
+set(ELFIO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ELFIO)
+set(ELFIO_INCLUDE_DIR ${ELFIO_DIR})
+
+if(NOT EXISTS ${ELFIO_INCLUDE_DIR}/elfio/elfio.hpp)
+    message(WARNING "ELFIO not found at ${ELFIO_INCLUDE_DIR}. Please clone ELFIO repository.")
+    message(STATUS "You can run: git clone https://github.com/serge1/ELFIO.git")
+endif()
+
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${ELFIO_INCLUDE_DIR}
+)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 

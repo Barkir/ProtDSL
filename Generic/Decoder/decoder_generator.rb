@@ -30,9 +30,9 @@ module SimInfra
 
     def self.create_decoder
 
-        decoders = File.open("src/decoders.hpp", "w")
+        decoders = File.open("Simulator/decoders.hpp", "w")
         decoders.write("#pragma once\n")
-        executers = File.open("src/executers.hpp", "w")
+        executers = File.open("Simulator/executers.hpp", "w")
         executers.write("#pragma once\n")
 
         things = YAML.load_file(YAML_PATH, permitted_classes: PERMITTED_CLASSES, aliases: true)

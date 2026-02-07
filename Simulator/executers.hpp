@@ -264,7 +264,6 @@ void inline executeecall(SPU& spu, uint32_t command) {
 	// something is happening
 }
 void inline executeebreak(SPU& spu, uint32_t command) {
-	// Точка останова - обычно вызывает исключение отладчика
 	spu.breakpoint = true;
 	// Можно также установить флаг trap
 	// trap = true;
