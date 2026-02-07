@@ -9,12 +9,14 @@ set(CMAKE_BUILD_TYPE Debug)
 
 set(SOURCES
     main.cpp
+    spu.cpp
 )
 
 set(HEADERS
     main.hpp
     decoders.hpp
     executers.hpp
+    spu.hpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})

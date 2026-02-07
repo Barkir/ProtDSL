@@ -50,8 +50,8 @@ void inline decodeslti(SPU& spu, uint32_t command) {
 void inline decodesltiu(SPU& spu, uint32_t command) {
 	std::cout << "sltiu " << std::endl;
 }
-void inline decodeld(SPU& spu, uint32_t command) {
-	std::cout << "ld " << std::endl;
+void inline decodelb(SPU& spu, uint32_t command) {
+	std::cout << "lb " << std::endl;
 }
 void inline decodelh(SPU& spu, uint32_t command) {
 	std::cout << "lh " << std::endl;
@@ -101,7 +101,7 @@ void inline bigSwitchDecode(SPU& spu, uint32_t command){
 			switch(bits_2_4) {
 			case 0:
 			{
-				decodeld(spu, command);
+				decodelb(spu, command);
 				break;
 			}
 			case 1:

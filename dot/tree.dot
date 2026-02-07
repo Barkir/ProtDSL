@@ -7,7 +7,7 @@ digraph Decoder {
   "root" -> "root_0" [label="0"];
   "root_0" [label="root_0\nchildren=2\nbits: 4\n(keys: 0, 1)", fillcolor="#eef6ff"];
   "root_0" -> "root_0_0" [label="0"];
-  "root_0_0" [label="ld", shape=ellipse, fillcolor="#eaffea"];
+  "root_0_0" [label="lb", shape=ellipse, fillcolor="#eaffea"];
   "root_0" -> "root_0_1" [label="1"];
   "root_0_1" [label="addi", shape=ellipse, fillcolor="#eaffea"];
   "root" -> "root_1" [label="1"];

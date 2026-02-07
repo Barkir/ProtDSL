@@ -46,6 +46,11 @@ module SimInfra
                 end
             end
 
+            imm_arg = @info.args.find {|a| a.name == :imm }
+            if imm_arg
+                scope.stmt(:getimm, [imm_arg, imm_arg.name])
+            end
+
             scope.instance_eval &block
 
             dst_arg = @info.args.find { |a| a.name == :rd }
@@ -55,3 +60,6 @@ module SimInfra
         end
     end
 end
+
+
+

@@ -7,7 +7,7 @@ YAML_PATH = "/home/kirill/Side-Projects/ProtDSL/IR.yaml"
 R_TYPE = %i[add sub xor or and sll srl slt sltu]
 
 I_TYPE_ALU = %i[addi andi xori ori slli srli slti sltiu]
-I_TYPE_LOAD = %i[ld lh lw lbu lhu]
+I_TYPE_LOAD = %i[lb lh lw lbu lhu]
 I_TYPE_E = %i[ecall ebreak]
 I_TYPE_J = %i[jalr]
 

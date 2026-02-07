@@ -10,7 +10,7 @@ module SimInfra
     def self.getOperandsAsHashTable(instr)
         puts "-------------------"
         puts instr
-        operands = instr.fields.select{|f| f[:value] == :reg}
+        operands = instr.fields.select{|f| f[:value] == :reg or f[:name] == :imm}
         .each_with_object({}){|f, h| h[f[:name].to_s] = OpenStruct.new(f.to_h)}
         puts "################"
         puts operands
