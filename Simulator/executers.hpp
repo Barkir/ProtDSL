@@ -265,24 +265,23 @@ void inline executeecall(SPU& spu, uint32_t command) {
 }
 void inline executeebreak(SPU& spu, uint32_t command) {
 	spu.breakpoint = true;
-	// Можно также установить флаг trap
-	// trap = true;
-	// trap_cause = BREAKPOINT;
 }
-void inline executesb(SPU& spu, uint32_t command) {
+void inline executejalr(SPU& spu, uint32_t command) {
+	uint32_t rd = 0; //	new_var
 	uint32_t rs1 = 0; //	new_var
 	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
-	uint32_t rs2 = 0; //	new_var
-	rs2 = spu.regs[getField(command, 20, 24, 0b00000000000000000000000000011111)];
 	uint32_t imm = 0; //	new_var
-	imm = getField(command, 7, 11, 0b00000000000000000000000000011111); // get_imm
+	imm = getField(command, 20, 31, 0b00000000000000000000111111111111); // get_imm
 	uint32_t _tmp22 = 0; //	new_var
-	int32_t addr = _tmp22 + imm;
+	uint32_t t = spu.pc + 4;
 
-      	spu.memory_write_uint8(addr, rs2);
-	rs1 = _tmp22; //	let
+      	spu.pc = (rs1 + imm) & ~1; // lowest bit = 0
+
+      	_tmp22 = t; // saving address
+	rd = _tmp22; //	let
+	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
 }
-void inline executesh(SPU& spu, uint32_t command) {
+void inline executesb(SPU& spu, uint32_t command) {
 	uint32_t rs1 = 0; //	new_var
 	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
 	uint32_t rs2 = 0; //	new_var
@@ -292,10 +291,10 @@ void inline executesh(SPU& spu, uint32_t command) {
 	uint32_t _tmp23 = 0; //	new_var
 	int32_t addr = _tmp23 + imm;
 
-      	spu.memory_write_uint16(addr, rs2);
+      	spu.memory_write_uint8(addr, rs2);
 	rs1 = _tmp23; //	let
 }
-void inline executesw(SPU& spu, uint32_t command) {
+void inline executesh(SPU& spu, uint32_t command) {
 	uint32_t rs1 = 0; //	new_var
 	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
 	uint32_t rs2 = 0; //	new_var
@@ -305,28 +304,122 @@ void inline executesw(SPU& spu, uint32_t command) {
 	uint32_t _tmp24 = 0; //	new_var
 	int32_t addr = _tmp24 + imm;
 
-      	spu.memory_write_uint32(addr, rs2);
+      	spu.memory_write_uint16(addr, rs2);
 	rs1 = _tmp24; //	let
 }
+void inline executesw(SPU& spu, uint32_t command) {
+	uint32_t rs1 = 0; //	new_var
+	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
+	uint32_t rs2 = 0; //	new_var
+	rs2 = spu.regs[getField(command, 20, 24, 0b00000000000000000000000000011111)];
+	uint32_t imm = 0; //	new_var
+	imm = getField(command, 7, 11, 0b00000000000000000000000000011111); // get_imm
+	uint32_t _tmp25 = 0; //	new_var
+	int32_t addr = _tmp25 + imm;
+
+      	spu.memory_write_uint32(addr, rs2);
+	rs1 = _tmp25; //	let
+}
+void inline executebeq(SPU& spu, uint32_t command) {
+	uint32_t rs1 = 0; //	new_var
+	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
+	uint32_t rs2 = 0; //	new_var
+	rs2 = spu.regs[getField(command, 20, 24, 0b00000000000000000000000000011111)];
+	uint32_t imm = 0; //	new_var
+	imm = getField(command, 7, 11, 0b00000000000000000000000000011111); // get_imm
+	uint32_t _tmp26 = 0; //	new_var
+	if (_tmp26 == rs1) spu.pc = spu.pc + rs2; //	beq
+}
+void inline executebne(SPU& spu, uint32_t command) {
+	uint32_t rs1 = 0; //	new_var
+	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
+	uint32_t rs2 = 0; //	new_var
+	rs2 = spu.regs[getField(command, 20, 24, 0b00000000000000000000000000011111)];
+	uint32_t imm = 0; //	new_var
+	imm = getField(command, 7, 11, 0b00000000000000000000000000011111); // get_imm
+	uint32_t _tmp27 = 0; //	new_var
+	if (_tmp27 != rs1) spu.pc = spu.pc + rs2; //	bne
+}
+void inline executeblt(SPU& spu, uint32_t command) {
+	uint32_t rs1 = 0; //	new_var
+	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
+	uint32_t rs2 = 0; //	new_var
+	rs2 = spu.regs[getField(command, 20, 24, 0b00000000000000000000000000011111)];
+	uint32_t imm = 0; //	new_var
+	imm = getField(command, 7, 11, 0b00000000000000000000000000011111); // get_imm
+	uint32_t _tmp28 = 0; //	new_var
+	if ((int32_t)_tmp28 < (int32_t)rs1) spu.pc = spu.pc + rs2; //	blt
+}
+void inline executebge(SPU& spu, uint32_t command) {
+	uint32_t rs1 = 0; //	new_var
+	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
+	uint32_t rs2 = 0; //	new_var
+	rs2 = spu.regs[getField(command, 20, 24, 0b00000000000000000000000000011111)];
+	uint32_t imm = 0; //	new_var
+	imm = getField(command, 7, 11, 0b00000000000000000000000000011111); // get_imm
+	uint32_t _tmp29 = 0; //	new_var
+	if ((int32_t)_tmp29 >= (int32_t)rs1) spu.pc = spu.pc + rs2; //	bge
+}
+void inline executebltu(SPU& spu, uint32_t command) {
+	uint32_t rs1 = 0; //	new_var
+	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
+	uint32_t rs2 = 0; //	new_var
+	rs2 = spu.regs[getField(command, 20, 24, 0b00000000000000000000000000011111)];
+	uint32_t imm = 0; //	new_var
+	imm = getField(command, 7, 11, 0b00000000000000000000000000011111); // get_imm
+	uint32_t _tmp30 = 0; //	new_var
+	if (_tmp30 < rs1) spu.pc = spu.pc + rs2; //	bltu
+}
+void inline executebgeu(SPU& spu, uint32_t command) {
+	uint32_t rs1 = 0; //	new_var
+	rs1 = spu.regs[getField(command, 15, 19, 0b00000000000000000000000000011111)];
+	uint32_t rs2 = 0; //	new_var
+	rs2 = spu.regs[getField(command, 20, 24, 0b00000000000000000000000000011111)];
+	uint32_t imm = 0; //	new_var
+	imm = getField(command, 7, 11, 0b00000000000000000000000000011111); // get_imm
+	uint32_t _tmp31 = 0; //	new_var
+	if (_tmp31 >= rs1) spu.pc = spu.pc + rs2; //	bgeu
+}
+void inline executelui(SPU& spu, uint32_t command) {
+	uint32_t rd = 0; //	new_var
+	uint32_t imm = 0; //	new_var
+	imm = getField(command, 12, 31, 0b00000000000011111111111111111111); // get_imm
+	rd = imm; //	let
+	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
+}
+void inline executeauipc(SPU& spu, uint32_t command) {
+	uint32_t rd = 0; //	new_var
+	uint32_t imm = 0; //	new_var
+	imm = getField(command, 12, 31, 0b00000000000011111111111111111111); // get_imm
+	rd = imm; //	let
+	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
+}
+void inline executejal(SPU& spu, uint32_t command) {
+	uint32_t rd = 0; //	new_var
+	uint32_t imm = 0; //	new_var
+	imm = getField(command, 12, 19, 0b00000000000000000000000011111111); // get_imm
+	rd = imm; //	let
+	spu.regs[getField(command, 7, 11, 0b00000000000000000000000000011111)] = rd;
+}
 void inline bigSwitchEncode(SPU& spu, uint32_t command){
-		uint32_t bits_1_5121314 = 0;
+		uint32_t bits_1_4512 = 0;
 		uint32_t bitMask = 0;
-		bitMask = (command & 0b00000000000000000000000000100000) >> 2;
-		bits_1_5121314 += bitMask;
-		bitMask = (command & 0b00000000000000000001000000000000) >> 10;
-		bits_1_5121314 += bitMask;
-		bitMask = (command & 0b00000000000000000010000000000000) >> 12;
-		bits_1_5121314 += bitMask;
-		bitMask = (command & 0b00000000000000000100000000000000) >> 14;
-		bits_1_5121314 += bitMask;
-		switch(bits_1_5121314) {
+		bitMask = (command & 0b00000000000000000000000000010000) >> 2;
+		bits_1_4512 += bitMask;
+		bitMask = (command & 0b00000000000000000000000000100000) >> 4;
+		bits_1_4512 += bitMask;
+		bitMask = (command & 0b00000000000000000001000000000000) >> 12;
+		bits_1_4512 += bitMask;
+		switch(bits_1_4512) {
 		case 0:
 		{
-			uint32_t bits_2_4 = 0;
+			uint32_t bits_2_1314 = 0;
 			uint32_t bitMask = 0;
-			bitMask = (command & 0b00000000000000000000000000010000) >> 4;
-			bits_2_4 += bitMask;
-			switch(bits_2_4) {
+			bitMask = (command & 0b00000000000000000010000000000000) >> 12;
+			bits_2_1314 += bitMask;
+			bitMask = (command & 0b00000000000000000100000000000000) >> 14;
+			bits_2_1314 += bitMask;
+			switch(bits_2_1314) {
 			case 0:
 			{
 				executelb(spu, command);
@@ -334,7 +427,12 @@ void inline bigSwitchEncode(SPU& spu, uint32_t command){
 			}
 			case 1:
 			{
-				executeaddi(spu, command);
+				executelbu(spu, command);
+				break;
+			}
+			case 2:
+			{
+				executelw(spu, command);
 				break;
 			}
 			default: break;
@@ -343,19 +441,19 @@ void inline bigSwitchEncode(SPU& spu, uint32_t command){
 		}
 		case 1:
 		{
-			uint32_t bits_2_4 = 0;
+			uint32_t bits_2_14 = 0;
 			uint32_t bitMask = 0;
-			bitMask = (command & 0b00000000000000000000000000010000) >> 4;
-			bits_2_4 += bitMask;
-			switch(bits_2_4) {
+			bitMask = (command & 0b00000000000000000100000000000000) >> 14;
+			bits_2_14 += bitMask;
+			switch(bits_2_14) {
 			case 0:
 			{
-				executelbu(spu, command);
+				executelh(spu, command);
 				break;
 			}
 			case 1:
 			{
-				executexori(spu, command);
+				executelhu(spu, command);
 				break;
 			}
 			default: break;
@@ -364,19 +462,70 @@ void inline bigSwitchEncode(SPU& spu, uint32_t command){
 		}
 		case 2:
 		{
-			uint32_t bits_2_4 = 0;
+			uint32_t bits_2_2613 = 0;
 			uint32_t bitMask = 0;
-			bitMask = (command & 0b00000000000000000000000000010000) >> 4;
-			bits_2_4 += bitMask;
-			switch(bits_2_4) {
+			bitMask = (command & 0b00000000000000000000000000000100) >> 0;
+			bits_2_2613 += bitMask;
+			bitMask = (command & 0b00000000000000000000000001000000) >> 5;
+			bits_2_2613 += bitMask;
+			bitMask = (command & 0b00000000000000000010000000000000) >> 13;
+			bits_2_2613 += bitMask;
+			switch(bits_2_2613) {
 			case 0:
 			{
-				executelw(spu, command);
+				executesb(spu, command);
 				break;
 			}
 			case 1:
 			{
-				executeslti(spu, command);
+				executesw(spu, command);
+				break;
+			}
+			case 2:
+			{
+				uint32_t bits_3_14 = 0;
+				uint32_t bitMask = 0;
+				bitMask = (command & 0b00000000000000000100000000000000) >> 14;
+				bits_3_14 += bitMask;
+				switch(bits_3_14) {
+				case 0:
+				{
+					executebeq(spu, command);
+					break;
+				}
+				case 1:
+				{
+					executeblt(spu, command);
+					break;
+				}
+				default: break;
+				}
+				break;
+			}
+			case 3:
+			{
+				executebltu(spu, command);
+				break;
+			}
+			case 6:
+			{
+				uint32_t bits_3_3 = 0;
+				uint32_t bitMask = 0;
+				bitMask = (command & 0b00000000000000000000000000001000) >> 3;
+				bits_3_3 += bitMask;
+				switch(bits_3_3) {
+				case 0:
+				{
+					executejalr(spu, command);
+					break;
+				}
+				case 1:
+				{
+					executejal(spu, command);
+					break;
+				}
+				default: break;
+				}
 				break;
 			}
 			default: break;
@@ -385,24 +534,73 @@ void inline bigSwitchEncode(SPU& spu, uint32_t command){
 		}
 		case 3:
 		{
-			executeori(spu, command);
+			uint32_t bits_2_14613 = 0;
+			uint32_t bitMask = 0;
+			bitMask = (command & 0b00000000000000000100000000000000) >> 12;
+			bits_2_14613 += bitMask;
+			bitMask = (command & 0b00000000000000000000000001000000) >> 5;
+			bits_2_14613 += bitMask;
+			bitMask = (command & 0b00000000000000000010000000000000) >> 13;
+			bits_2_14613 += bitMask;
+			switch(bits_2_14613) {
+			case 0:
+			{
+				executesh(spu, command);
+				break;
+			}
+			case 2:
+			{
+				executebne(spu, command);
+				break;
+			}
+			case 6:
+			{
+				executebge(spu, command);
+				break;
+			}
+			case 7:
+			{
+				executebgeu(spu, command);
+				break;
+			}
+			default: break;
+			}
 			break;
 		}
 		case 4:
 		{
-			uint32_t bits_2_4 = 0;
+			uint32_t bits_2_13142 = 0;
 			uint32_t bitMask = 0;
-			bitMask = (command & 0b00000000000000000000000000010000) >> 4;
-			bits_2_4 += bitMask;
-			switch(bits_2_4) {
+			bitMask = (command & 0b00000000000000000010000000000000) >> 11;
+			bits_2_13142 += bitMask;
+			bitMask = (command & 0b00000000000000000100000000000000) >> 13;
+			bits_2_13142 += bitMask;
+			bitMask = (command & 0b00000000000000000000000000000100) >> 2;
+			bits_2_13142 += bitMask;
+			switch(bits_2_13142) {
 			case 0:
 			{
-				executelh(spu, command);
+				executeaddi(spu, command);
 				break;
 			}
 			case 1:
 			{
-				executeslli(spu, command);
+				executeauipc(spu, command);
+				break;
+			}
+			case 2:
+			{
+				executexori(spu, command);
+				break;
+			}
+			case 4:
+			{
+				executeslti(spu, command);
+				break;
+			}
+			case 6:
+			{
+				executeori(spu, command);
 				break;
 			}
 			default: break;
@@ -411,19 +609,31 @@ void inline bigSwitchEncode(SPU& spu, uint32_t command){
 		}
 		case 5:
 		{
-			uint32_t bits_2_4 = 0;
+			uint32_t bits_2_1314 = 0;
 			uint32_t bitMask = 0;
-			bitMask = (command & 0b00000000000000000000000000010000) >> 4;
-			bits_2_4 += bitMask;
-			switch(bits_2_4) {
+			bitMask = (command & 0b00000000000000000010000000000000) >> 12;
+			bits_2_1314 += bitMask;
+			bitMask = (command & 0b00000000000000000100000000000000) >> 14;
+			bits_2_1314 += bitMask;
+			switch(bits_2_1314) {
 			case 0:
 			{
-				executelhu(spu, command);
+				executeslli(spu, command);
 				break;
 			}
 			case 1:
 			{
 				executesrli(spu, command);
+				break;
+			}
+			case 2:
+			{
+				executesltiu(spu, command);
+				break;
+			}
+			case 3:
+			{
+				executeandi(spu, command);
 				break;
 			}
 			default: break;
@@ -432,121 +642,114 @@ void inline bigSwitchEncode(SPU& spu, uint32_t command){
 		}
 		case 6:
 		{
-			executesltiu(spu, command);
-			break;
-		}
-		case 7:
-		{
-			executeandi(spu, command);
-			break;
-		}
-		case 8:
-		{
-			uint32_t bits_2_642030 = 0;
+			uint32_t bits_2_61314 = 0;
 			uint32_t bitMask = 0;
-			bitMask = (command & 0b00000000000000000000000001000000) >> 3;
-			bits_2_642030 += bitMask;
-			bitMask = (command & 0b00000000000000000000000000010000) >> 2;
-			bits_2_642030 += bitMask;
-			bitMask = (command & 0b00000000000100000000000000000000) >> 19;
-			bits_2_642030 += bitMask;
-			bitMask = (command & 0b01000000000000000000000000000000) >> 30;
-			bits_2_642030 += bitMask;
-			switch(bits_2_642030) {
+			bitMask = (command & 0b00000000000000000000000001000000) >> 4;
+			bits_2_61314 += bitMask;
+			bitMask = (command & 0b00000000000000000010000000000000) >> 12;
+			bits_2_61314 += bitMask;
+			bitMask = (command & 0b00000000000000000100000000000000) >> 14;
+			bits_2_61314 += bitMask;
+			switch(bits_2_61314) {
 			case 0:
 			{
-				executesb(spu, command);
-				break;
-			}
-			case 4:
-			{
-				executeadd(spu, command);
-				break;
-			}
-			case 5:
-			{
-				executesub(spu, command);
-				break;
-			}
-			case 12:
-			{
-				executeecall(spu, command);
-				break;
-			}
-			case 14:
-			{
-				executeebreak(spu, command);
-				break;
-			}
-			default: break;
-			}
-			break;
-		}
-		case 9:
-		{
-			executexor(spu, command);
-			break;
-		}
-		case 10:
-		{
-			uint32_t bits_2_4 = 0;
-			uint32_t bitMask = 0;
-			bitMask = (command & 0b00000000000000000000000000010000) >> 4;
-			bits_2_4 += bitMask;
-			switch(bits_2_4) {
-			case 0:
-			{
-				executesw(spu, command);
+				uint32_t bits_3_230 = 0;
+				uint32_t bitMask = 0;
+				bitMask = (command & 0b00000000000000000000000000000100) >> 1;
+				bits_3_230 += bitMask;
+				bitMask = (command & 0b01000000000000000000000000000000) >> 30;
+				bits_3_230 += bitMask;
+				switch(bits_3_230) {
+				case 0:
+				{
+					executeadd(spu, command);
+					break;
+				}
+				case 1:
+				{
+					executesub(spu, command);
+					break;
+				}
+				case 2:
+				{
+					executelui(spu, command);
+					break;
+				}
+				default: break;
+				}
 				break;
 			}
 			case 1:
+			{
+				executexor(spu, command);
+				break;
+			}
+			case 2:
 			{
 				executeslt(spu, command);
 				break;
 			}
+			case 3:
+			{
+				executeor(spu, command);
+				break;
+			}
+			case 4:
+			{
+				uint32_t bits_3_20 = 0;
+				uint32_t bitMask = 0;
+				bitMask = (command & 0b00000000000100000000000000000000) >> 20;
+				bits_3_20 += bitMask;
+				switch(bits_3_20) {
+				case 0:
+				{
+					executeecall(spu, command);
+					break;
+				}
+				case 1:
+				{
+					executeebreak(spu, command);
+					break;
+				}
+				default: break;
+				}
+				break;
+			}
 			default: break;
 			}
 			break;
 		}
-		case 11:
+		case 7:
 		{
-			executeor(spu, command);
-			break;
-		}
-		case 12:
-		{
-			uint32_t bits_2_4 = 0;
+			uint32_t bits_2_1314 = 0;
 			uint32_t bitMask = 0;
-			bitMask = (command & 0b00000000000000000000000000010000) >> 4;
-			bits_2_4 += bitMask;
-			switch(bits_2_4) {
+			bitMask = (command & 0b00000000000000000010000000000000) >> 12;
+			bits_2_1314 += bitMask;
+			bitMask = (command & 0b00000000000000000100000000000000) >> 14;
+			bits_2_1314 += bitMask;
+			switch(bits_2_1314) {
 			case 0:
-			{
-				executesh(spu, command);
-				break;
-			}
-			case 1:
 			{
 				executesll(spu, command);
 				break;
 			}
+			case 1:
+			{
+				executesrl(spu, command);
+				break;
+			}
+			case 2:
+			{
+				executesltu(spu, command);
+				break;
+			}
+			case 3:
+			{
+				executeand(spu, command);
+				break;
+			}
 			default: break;
 			}
-			break;
-		}
-		case 13:
-		{
-			executesrl(spu, command);
-			break;
-		}
-		case 14:
-		{
-			executesltu(spu, command);
-			break;
-		}
-		case 15:
-		{
-			executeand(spu, command);
 			break;
 		}
 		default: break;

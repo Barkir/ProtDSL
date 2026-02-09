@@ -74,7 +74,6 @@ module SimInfra
     ## STANDARD_BIT_BASIS_SIZE - 1 - n is actually the bit we want to place. e.g we want to place it to the 2nd bit, it is the 2nd iteration
     ## this will eqaul 4 - 1 - 1 = 2.
 
-
   def self.generate_get_bits_function(executers, bitBasis, depth)
         # executers.write("int getBitsAtLevel#{depth}(uint32_t command) {\n")
         var_name = "bits_#{depth}_#{bitBasis.map{|n| n[:nbit]}.join()}"

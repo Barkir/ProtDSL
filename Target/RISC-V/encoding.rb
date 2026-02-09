@@ -71,13 +71,20 @@ module SimInfra
             andi:  0x7,
             slli:  0x1,
             srli:  0x5,
-            # srai:  [0x5], # TODO: can be bugs here imm[5:11]  = 0x20
+            srai:  [0x5], # TODO: can be bugs here imm[5:11]  = 0x20
             slti:  0x2,
             sltiu: 0x3,
         }[name]
         format_i(0b0010011, funct3, rd, rs1, imm)
     end
 
+    def format_i_j(name, rd, rs1, imm)
+        funct3 =
+        {
+            jalr: 0x0,
+        }[name]
+        format_i(0b1100111, funct3, rd, rs1, imm)
+    end
 
     def format_i_load(name, rd, rs1, imm)
         funct3 =
@@ -104,7 +111,81 @@ module SimInfra
         ]
     end
 
-    def format_j(name, rd, imm)
+def format_b(opcode, funct3, rs1, rs2, imm)
+    imm_val = imm.is_a?(String) ? imm.to_i(2) : imm.to_i(10)
+
+    # imm[12] | imm[11] | imm[10:5] | imm[4:1]
+    #  bit 31    bit 7     30:25      11:8
+
+    imm_12   = (imm_val >> 12) & 0x1     # bit 31
+    imm_11   = (imm_val >> 11) & 0x1     # bit 7
+    imm_10_5 = (imm_val >> 5)  & 0x3F    # bits 30:25
+    imm_4_1  = (imm_val >> 1)  & 0xF     # bits 11:8
+
+    imm_lo = (imm_11 << 4) | imm_4_1
+    imm_hi = (imm_12 << 6) | imm_10_5
+
+    return :B, [
+        field(:opcode, 6, 0, opcode),
+        field(rs1.name, 19, 15, :reg),
+        field(rs2.name, 24, 20, :reg),
+        field(:funct3, 14, 12, funct3),
+        field(:imm, 11, 7, imm_lo),
+        field(:imm1, 31, 25, imm_hi)
+    ]
+end
+
+def format_b_branch(name, rs1, rs2, imm)
+    funct3 = {
+        beq:  0x0,
+        bne:  0x1,
+        blt:  0x4,
+        bge:  0x5,
+        bltu: 0x6,
+        bgeu: 0x7
+    }[name]
+    format_b(0b1100011, funct3, rs1, rs2, imm)
+end
+
+    def format_u(opcode, rd, imm)
+        imm_val = imm.is_a?(String) ? imm.to_i(2) : imm.to_i(10)
+
+        return :U, [
+            field(:opcode, 6, 0, opcode),
+            field(rd.name, 11, 7, :reg),
+            field(:imm, 31, 12, imm_val & 0xFFFFF)
+        ]
+    end
+
+    def format_j(opcode, rd, imm)
+        imm_val = imm.is_a?(String) ? imm.to_i(2) : imm.to_i(10)
+
+        imm_19_12 = (imm_val >> 12) & 0xFF      # bits 19:12 -> imm [19:12]
+        imm_11    = (imm_val >> 11) & 0x1       # bit 11 -> bit 20
+        imm_10_1  = (imm_val >> 1)  & 0x3FF     # bits 10:1 -> bits 30:21
+        imm_20    = (imm_val >> 20) & 0x1       # bit 20 -> bit 31
+
+        imm_hi = (imm_20 << 11) | (imm_10_1 << 1) | imm_11
+
+        return :J, [
+            field(:opcode, 6, 0, opcode),
+            field(rd.name, 11, 7, :reg),
+            field(:imm, 19, 12, imm_19_12),
+            field(:imm1, 31, 20, imm_hi)
+        ]
+    end
+
+    def format_u_upper(name, rd, imm)
+        opcode = {
+            lui:   0b0110111,
+            auipc: 0b0010111
+            }[name]
+
+        format_u(opcode, rd, imm)
+    end
+
+    def format_j_jump(name, rd, imm)
+        format_j(0b1101111, rd, imm) if name == :jal
     end
 
 end

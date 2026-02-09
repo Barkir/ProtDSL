@@ -12,20 +12,32 @@
 #include "decoders.hpp"
 #include "executers.hpp"
 
-void init(std::vector<uint32_t> commands, size_t fsize) {
+void init(commandHash& commands, size_t fsize) {
     struct SPU spu(fsize);
 
-    std::vector<uint8_t>  commands_1byte(commands.size() * sizeof(uint32_t));
-    memcpy(commands_1byte.data(), commands.data(), commands_1byte.size());
+    for (auto it = commands.begin(), end = commands.end(); it != end; ++it) {
+        auto commandsData = it->second; // data of function
+        auto commandsName = it->first;  // name of function
 
-    size_t cm_sz = commands_1byte.size();
-    while (spu.pc < cm_sz) {
+        if (commandsName == "main"){
 
-        auto command = getCommand(commands_1byte, spu.pc);
-        // std::cout << "command = \n" << std::bitset<32>(command) << std::endl;
-        bigSwitchDecode(spu, command);
-        spu.pc += PC_INC;
-	}
+        std::vector<uint8_t>  commands_1byte(commandsData.size() * sizeof(uint32_t));
+        memcpy(commands_1byte.data(), commandsData.data(), commands_1byte.size());
+
+        size_t cm_sz = commands_1byte.size();
+
+        std::cout << "SIZE=" << cm_sz << std::endl;
+        elfdump(reinterpret_cast<const char*>(&commands_1byte), cm_sz);
+        std::cout << "<" << commandsName << ">" << std::endl;
+
+
+        while (spu.pc < cm_sz) {
+            auto command = getCommand(commands_1byte, spu.pc);
+            bigSwitchDecode(spu, command);
+            spu.pc += PC_INC;
+	    }
+        }
+    }
 }
 
 
@@ -34,7 +46,7 @@ int main(int argc, char* argv[]) {
     if (argc >= 2)
     {
         std::string filename = argv[1];
-        std::vector<uint32_t> commands;
+        commandHash commands;
         size_t fsize = 0;
         if (get_commands(&commands, filename, &fsize)) {
             return TOY_FAILED;

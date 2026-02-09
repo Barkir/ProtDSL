@@ -1,6 +1,9 @@
 #pragma once
 
 #include <elfio/elfio.hpp>
+#include <vector>
+#include <unordered_map>
+#include <string>
 
 uint32_t getField(uint32_t command, int32_t from, int32_t to, int32_t mask);
 uint32_t getCommand(const std::vector<uint8_t> commands, size_t pc);
@@ -8,6 +11,8 @@ int get_commands(std::vector<uint32_t> *commands, const std::string& filename, s
 size_t getFileSize(std::ifstream& file);
 void init(std::vector<uint32_t> commands, size_t fsize);
 uint32_t flipMask(uint32_t bitmask, int numBits);
+
+using commandHash = std::unordered_map<std::string, std::vector<uint32_t>>;
 
 const size_t COMMAND_SIZE = 4;
 const size_t DEFAULT_MEMORY_SIZE = 1024;
@@ -49,7 +54,7 @@ uint32_t flipMask(uint32_t bitmask, int numBits)
     return flippedMask;
 }
 
-int get_commands(std::vector<uint32_t> *commands, const std::string& filename, size_t *fsz) {
+int get_commands(commandHash *commands, const std::string& filename, size_t *fsz) {
     std::ifstream file(filename, std::ios::binary);
     ELFIO::elfio reader;
 
@@ -63,27 +68,61 @@ int get_commands(std::vector<uint32_t> *commands, const std::string& filename, s
         return -1;
     }
 
-    const char *data = nullptr;
-    for (const auto& section : reader.sections) {
-        auto name = section->get_name();
-
-        if (section->get_size() == 0) continue;
-        if (name == ".text") {
-            data = section->get_data();
-            if (data != nullptr) {
-                elfdump(data, 64);
-                break;
-            }
-        }
+    // getting .text section
+    auto text_section = reader.sections[".text"];
+    if (!text_section) {
+        std::cout << ".text section not found" << std::endl;
+        return -1;
     }
 
-    size_t fSize = getFileSize(file);
-    // ON_DEBUG(hexDump(buffer));
-    *commands = std::vector<uint32_t>(
-    reinterpret_cast<const uint32_t*>(data),
-    reinterpret_cast<const uint32_t*>(data) + fSize / COMMAND_SIZE
-    );
+    // getting  .text section bytes
+    const char* data = text_section->get_data();
+    if (data == nullptr) {
+        std::cout << "no data in .text section" << std::endl;
+        return -1;
+    }
 
+    int text_section_idx = text_section->get_index();
+
+    auto symtab_section = reader.sections[".symtab"];
+    if (!symtab_section) {
+        std::cout << ".symtab section not found" << std::endl;
+        return -1;
+
+    }
+
+    // accessing sym_table
+    ELFIO::symbol_section_accessor symbols(reader, symtab_section);
+
+
+
+    for (ELFIO::Elf_Xword i = 0; i < symbols.get_symbols_num(); ++i) {
+        std::string name;
+        ELFIO::Elf64_Addr value;
+        ELFIO::Elf_Xword size;
+        unsigned char bind;
+        unsigned char type;
+        ELFIO::Elf_Half section_index;
+        unsigned char other;
+
+        // getting info about symbol
+        symbols.get_symbol(i, name, value, size, bind, type, section_index, other);
+
+        // checking if it's section is text_section
+        if (section_index == text_section_idx) {
+            ELFIO::Elf64_Addr section_addr = text_section->get_address();
+            ELFIO::Elf64_Addr offset_in_section = value - section_addr;
+
+            // double check for offset in section
+            if (offset_in_section < text_section->get_size())
+
+                // adding to commands hash_table
+                (*commands)[name] = std::vector<uint32_t>(
+                reinterpret_cast<const uint32_t*>(data + offset_in_section),
+                reinterpret_cast<const uint32_t*>(data + offset_in_section + size)
+                );
+            }
+    }
     return 0;
 }
 

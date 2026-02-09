@@ -106,38 +106,38 @@ module SimInfra
     end
 
     self.add_instruction :beq do |irstmt, operands|
-      "\tif (#{irstmt.oprnds[0].name} == #{irstmt.oprnds[1].name}) pc_next = pc + #{irstmt.oprnds[2].name}; //\tbeq\n"
+      "\tif (#{irstmt.oprnds[0].name} == #{irstmt.oprnds[1].name}) spu.pc = spu.pc + #{irstmt.oprnds[2].name}; //\tbeq\n"
     end
 
     self.add_instruction :bne do |irstmt, operands|
-      "\tif (#{irstmt.oprnds[0].name} != #{irstmt.oprnds[1].name}) pc_next = pc + #{irstmt.oprnds[2].name}; //\tbne\n"
+      "\tif (#{irstmt.oprnds[0].name} != #{irstmt.oprnds[1].name}) spu.pc = spu.pc + #{irstmt.oprnds[2].name}; //\tbne\n"
     end
 
     self.add_instruction :blt do |irstmt, operands|
-      "\tif ((int32_t)#{irstmt.oprnds[0].name} < (int32_t)#{irstmt.oprnds[1].name}) pc_next = pc + #{irstmt.oprnds[2].name}; //\tblt\n"
+      "\tif ((int32_t)#{irstmt.oprnds[0].name} < (int32_t)#{irstmt.oprnds[1].name}) spu.pc = spu.pc + #{irstmt.oprnds[2].name}; //\tblt\n"
     end
 
     self.add_instruction :bge do |irstmt, operands|
-      "\tif ((int32_t)#{irstmt.oprnds[0].name} >= (int32_t)#{irstmt.oprnds[1].name}) pc_next = pc + #{irstmt.oprnds[2].name}; //\tbge\n"
+      "\tif ((int32_t)#{irstmt.oprnds[0].name} >= (int32_t)#{irstmt.oprnds[1].name}) spu.pc = spu.pc + #{irstmt.oprnds[2].name}; //\tbge\n"
     end
 
     self.add_instruction :bltu do |irstmt, operands|
-      "\tif (#{irstmt.oprnds[0].name} < #{irstmt.oprnds[1].name}) pc_next = pc + #{irstmt.oprnds[2].name}; //\tbltu\n"
+      "\tif (#{irstmt.oprnds[0].name} < #{irstmt.oprnds[1].name}) spu.pc = spu.pc + #{irstmt.oprnds[2].name}; //\tbltu\n"
     end
 
     self.add_instruction :bgeu do |irstmt, operands|
-      "\tif (#{irstmt.oprnds[0].name} >= #{irstmt.oprnds[1].name}) pc_next = pc + #{irstmt.oprnds[2].name}; //\tbgeu\n"
+      "\tif (#{irstmt.oprnds[0].name} >= #{irstmt.oprnds[1].name}) spu.pc = spu.pc + #{irstmt.oprnds[2].name}; //\tbgeu\n"
     end
 
     self.add_instruction :jal do |irstmt, operands|
-      "\t#{irstmt.oprnds[0].name} = pc + 4; // сохраняем адрес возврата\n
-      \tpc_next = pc + #{irstmt.oprnds[1].name}; // переходим\n"
+      "\t#{irstmt.oprnds[0].name} = spu.pc + 4;
+      \tspu.pc = spu.pc + #{irstmt.oprnds[1].name};"
     end
 
     self.add_instruction :jalr do |irstmt, operands|
-      "\tuint32_t t = pc + 4;\n
-      \tpc_next = (#{irstmt.oprnds[1].name} + #{irstmt.oprnds[2].name}) & ~1; // lowest bit = 0\n
-      \t#{irstmt.oprnds[0].name} = t; // сохраняем адрес возврата\n"
+      "\tuint32_t t = spu.pc + 4;\n
+      \tspu.pc = (#{irstmt.oprnds[1].name} + #{irstmt.oprnds[2].name}) & ~1; // lowest bit = 0\n
+      \t#{irstmt.oprnds[0].name} = t; // saving address\n"
     end
 
     self.add_instruction :lui do |irstmt, operands|
@@ -204,9 +204,6 @@ module SimInfra
     self.add_instruction :ebreak do
       <<~CODE
         \tspu.breakpoint = true;
-        \t// Можно также установить флаг trap
-        \t// trap = true;
-        \t// trap_cause = BREAKPOINT;
       CODE
     end
 

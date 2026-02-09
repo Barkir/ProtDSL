@@ -50,7 +50,7 @@ module SimInfra
         executers.write("}\n")
 
         decoders.write("void inline decode#{instr.name}(SPU& spu, uint32_t command) {\n")
-        decoders.write("\tstd::cout << \"#{instr.name} \" << std::endl;\n")
+        decoders.write("\tstd::cout << std::hex << std::setw(8) << std::setfill('0') << spu.pc <<\": #{instr.name} \" << std::endl;\n")
         decoders.write("}\n");
 
         end
