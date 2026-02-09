@@ -226,36 +226,61 @@ to generate this code:
         def sltu(other);    @scope.sltu(self, other); end
 ```
 
-### Decoder usecase example.
+---------------------------
 
-We have this mircoassmbler code example
+### TESTING DECODER
 
-```ruby
-require_relative "../encoder"
+To test decoder you can use `run_tests.py`
+It checks the results of `riscv_decode` with the results of `riscv32-unknown-elf-objdump` from riscv-gnu-toolchain.
 
-asm = MicroAsm.new
-asm.prog do
-    ADD r9, r9, r10
-    XOR r8, r8, r8
-    XOR r8, r9, r12
-    ADD r9, r9, r10
-    SUB r8, r8, r8
-    XOR r8, r9, r12
-end
+>USECASE
+```bash
+cd Tests
+python3 run_tests.py --test-file c/test_rv32im_2.c
+```
+
+
+you get this
+```bash
+Компиляция тестового кода...
+ELF файл создан: /tmp/tmpowm9a3xn/test.elf
+Получение инструкций из objdump...
+Найдено 22 инструкций в секции main
+Запуск пользовательского декодера...
+Декодер вернул 22 инструкций
+Сравнение результатов...
+
+============================================================
+ОТЧЕТ О ТЕСТИРОВАНИИ ДЕКОДЕРА RISC-V
+============================================================
+
+Общая статистика:
+  Всего инструкций проверено: 22
+  Совпало: 21 (95.5%)
+  Несовпадений: 1 (4.5%)
+
+Статистика по типам инструкций:
+Инструкция      Всего    OK       FAIL     Статус
+-------------------------------------------------------
+addi            7        7        0        ✓ OK
+lw              6        6        0        ✓ OK
+sw              4        4        0        ✓ OK
+lui             1        0        1        ✗ FAIL
+blt             1        1        0        ✓ OK
+jal             1        1        0        ✓ OK
+add             1        1        0        ✓ OK
+jalr            1        1        0        ✓ OK
+
+Детали несовпадений (первые 10):
+Адрес      Opcode     Ожидалось       Получено
+-------------------------------------------------------
+0x00000018 000027b7   lui             slt
+
+============================================================
+✗ ЕСТЬ ОШИБКИ в инструкциях: lui
+============================================================
 
 ```
 
-- running `ruby add_sub.rb`
-- `result.bin` is generated which looks like this (6 4-byte commands)
-![alt text](./md/bytecode.png)
-- running `ricsv_decode result.bin` and getting this
-```
-ADD      rd=-1    rs1=9    rs2=10:         a484b3
-XOR      rd=-1    rs1=8    rs2=8:          844433
-XOR      rd=-1    rs1=9    rs2=12:         c4c433
-ADD      rd=-1    rs1=9    rs2=10:         a484b3
-SUB      rd=-1    rs1=8    rs2=8:          40840433
-XOR      rd=-1    rs1=9    rs2=12:         c4c433
-```
+> As you see there are still some bugs with lui instruction. Also if you meet div or mul, they would also be unavailable because i haven't still added it into the instruction set.
 
-The dump shows us _command name_, _use of registers_ and _command in hex_
